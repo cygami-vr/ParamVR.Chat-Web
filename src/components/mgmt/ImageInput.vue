@@ -2,11 +2,16 @@
 import { reactive } from 'vue'
 import fetchw from '@/fetchWrapper'
 
-const state = reactive({ file: null as unknown as File, error: ''})
+const state = reactive({ file: null as unknown as File })
 const props = defineProps(['idProperty', 'idValue', 'url'])
-const emit = defineEmits(['image-uploaded'])
+const emit = defineEmits(['image-uploaded', 'error'])
 
 function uploadImage() {
+
+    if (!state.file || !props.idValue) {
+        console.log('File or id value missing')
+        return
+    }
 
     const formData = new FormData()
     formData.append('image', state.file)
@@ -19,10 +24,10 @@ function uploadImage() {
         if (resp.ok) {
             emit('image-uploaded')
         } else {
-            state.error = `Error: ${resp.statusText}`
+            emit('error', `Error: ${resp.statusText}`)
         }
     }).catch(err => {
-        state.error = `Error: ${err}`
+        emit('error', `Error: ${err}`)
     })
 }
 
@@ -35,9 +40,8 @@ function onFileChange(evt: Event) {
 </script>
 
 <template>
-    <Header :msg="state.error" @ack="() => state.error = ''" />
-    <input name="image" type="file" @change="onFileChange" accept="image/*" />
-    <button @click="uploadImage">Upload</button>
+    <input class="form-control" accept="image/*" type="file" @change="onFileChange" />
+    <button type="button" class="btn btn-primary" @click="uploadImage">Upload</button>
 </template>
 
 <style>

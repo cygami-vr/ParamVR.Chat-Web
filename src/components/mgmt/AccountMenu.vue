@@ -1,13 +1,13 @@
 <script setup lang='ts'>
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
+import AboutButton from '@/components/AboutButton.vue'
 import fetchw from '@/fetchWrapper'
 
 const state = reactive({
-    open: false, changingPw: false,
-    password: '', confirmPassword: '',
-    error: ''
+    password: '', confirmPassword: '', listenKey: '', error: ''
 })
 const emit = defineEmits(['logged-out'])
+const closeBtn = ref(null as unknown as HTMLButtonElement)
 defineProps(['name'])
 
 function logout() {
@@ -25,10 +25,6 @@ function logout() {
 }
 
 function generateListenKey() {
-    // To the user: Please copy this key down. If lost you must generate a new one. 
-    // The listen key is required to authenticate the VrcParameter client to receive VRC parameter changes.
-    // Do not give this key to others.
-    // Confirm the user wants to proceed
     fetchw('/parameter/listen-key', {
         method: 'POST'
     }).then(async resp => {
@@ -36,8 +32,8 @@ function generateListenKey() {
             let key = await resp.text()
             // remove the quotes
             key = key.substring(1, key.length - 1)
-            alert('Your key is (save this somewhere): ' + key)
-            // TODO proper modal dialog with new key
+            state.listenKey = key
+            state.error = ''
         } else {
             state.error = `Error: ${resp.statusText}`
         }
@@ -46,18 +42,20 @@ function generateListenKey() {
     })
 }
 
-function changePassword() {
+function changePassword(evt: MouseEvent) {
     if (state.password == state.confirmPassword) {
-        state.changingPw = false
         fetchw('/account', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({newPassword: state.password })
+            body: JSON.stringify({ newPassword: state.password })
         }).then(resp => {
             if (resp.ok) {
-                alert('Password changed.')
+                reset()
+                if (closeBtn.value) {
+                    closeBtn.value.click()
+                }
             } else {
                 state.error = `Error: ${resp.statusText}`
             }
@@ -69,52 +67,113 @@ function changePassword() {
     }
 }
 
+function reset() {
+    state.error = ''
+    state.password = ''
+    state.confirmPassword = ''
+}
+
+function copyParameterKey() {
+    window.navigator.clipboard.writeText(state.listenKey)
+}
+
 </script>
 
 <template>
-    <div id="account-menu">
-        <Header :msg="state.error" @ack="() => state.error = ''" />
-        <div hidden>
-            <a target="_blank" href="/client/ParamVR.Chat-Client.jnlp">Launch client</a>
-            (Requires <a target="_blank" href="https://openwebstart.com/download/">Open Web Start</a>)
+    <nav class="navbar navbar-expand bg-secondary bg-gradient">
+        <div class="container-fluid justify-content-end">
+            <div class="me-3"><AboutButton /></div>
+            <div class="dropdown text-end">
+                <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    You are logged in as {{name}}
+                </button>
+                <ul class="dropdown-menu">
+                    <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#changePassword" @click="reset">Change password</button></li>
+                    <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#generateListenKey-confirm">Generate a new listen key</button></li>
+                    <li><button type="button" class="dropdown-item" @click="logout">Log out</button></li>
+                </ul>
+            </div>
         </div>
-        <div class="clickable" @click="() => state.open = !state.open">
-            <span class="material-icons">menu</span>
-            You are logged in as {{ name }}
+    </nav>
+    <div id="changePassword" class="modal fade" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Change password</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" ref="closeBtn" />
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3 justify-content-start">
+                        <div v-if="state.error" class="col-12 alert alert-danger">{{state.error}}</div>
+                        <div class="col-6">
+                            <input class="form-control" v-model="state.password" name="password" type="password" placeholder="password" />
+                        </div>
+                        <div class="col-6">
+                            <input class="form-control" v-model="state.confirmPassword" name="confirmPassword" type="password" placeholder="confirm password" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="row">
+                        <div class="col-12">
+                            <button type="button" class="btn btn-primary" @click="changePassword">Change password</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <template v-if="state.open">
-            <menu>
-                <li class="clickable" @click="() => state.changingPw = true">Change password</li>
-                <li class="clickable" @click="generateListenKey">Generate a new listen key</li>
-                <li class="clickable" @click="logout">Log out</li>
-            </menu>
-            <template v-if="state.changingPw">
-                <input type="password" v-model="state.password" name="password" placeholder="password" />
-                <input type="password" v-model="state.confirmPassword" name="password" placeholder="confirm password" />
-                <button @click="changePassword">Change password</button>
-            </template>
-        </template>
+    </div>
+    <div id="generateListenKey-confirm" class="modal fade" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Really generate a new listen key?</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3 justify-content-start">
+                        <div class="col-12">This will replace your current listen key.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="row">
+                        <div class="col">
+                            <button type="button" class="btn btn-primary" @click="generateListenKey"
+                             data-bs-toggle="modal" data-bs-target="#generateListenKey-keyGenerated" data-bs-dismiss="modal">Yes</button>
+                        </div>
+                        <div class="col">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="generateListenKey-keyGenerated" class="modal fade" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Your new listen key</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3 justify-content-start">
+                        <div v-if="state.listenKey" class="col-12">
+                            Your new key is
+                            <div class="col input-group mt-1 mb-1">
+                                <input type="text" class="form-control" :value="state.listenKey" readonly />
+                                <button type="button" @click="copyParameterKey" class="btn btn-primary">Copy</button>
+                            </div>
+                            Make sure to save it somewhere.
+                            If it is lost, you may need to generate a new key.
+                        </div>
+                        <div v-else="state.error" class="col-12 alert alert-danger">{{state.error}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
 <style>
-
-#account-menu {
-    position: fixed;
-    top: 0px;
-    right: 0px;
-    z-index: 10;
-    color: lightgray;
-    background-color: rgba(64, 64, 64, 1);
-    border-radius: 0 0 0 10px;
-}
-
-#account-menu menu {
-    list-style: none;
-}
-
-#account-menu .clickable {
-    margin-right: 5px;
-}
-
 </style>

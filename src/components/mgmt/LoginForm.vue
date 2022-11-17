@@ -36,11 +36,23 @@ login()
 </script>
 
 <template>
-    <Header :msg="state.error" @ack="() => state.error = ''" />
-    <input v-model="state.username" name="username" type="text" placeholder="username" />
-    <input v-model="state.password" name="password" type="password" placeholder="password" />
-    <button @click="login">Log in</button>
-    <div v-if="state.msg">{{state.msg}}</div>
+    <div class="row g-3 justify-content-start">
+        <div class="col-12 h4">
+            Please log in to manage your account
+        </div>
+        <div v-if="state.error" class="col-12 alert alert-danger">
+            {{state.error}}
+        </div>
+        <div class="col-6">
+            <input class="form-control" v-model="state.username" name="username" type="text" placeholder="username" />
+        </div>
+        <div class="col-6">
+            <input class="form-control" v-model="state.password" name="password" type="password" placeholder="password" />
+        </div>
+        <div class="col-12">
+            <button type="button" class="btn btn-primary" @click="login">Log in</button>
+        </div>
+    </div>
 </template>
 
 <style>

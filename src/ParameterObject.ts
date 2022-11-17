@@ -15,11 +15,13 @@ class ParameterObject {
     values: Array<ParameterValue> = []
     value: string = ''
     parameterId: number
+    saved: string
+    order: number
     image: string = ''
     
     constructor(description: string, name: string, key: string, type: number, dataType: number,
          avatarName: string, avatarVrcUuid: string, defaultValue: string, minValue: string, maxValue: string,
-         parameterId: number, values?: Array<ParameterValue>) {
+         parameterId: number, saved: string, order: number, values?: Array<ParameterValue>) {
 
         this.description = description
         this.name = name
@@ -32,31 +34,11 @@ class ParameterObject {
         this.minValue = minValue
         this.maxValue = maxValue
         this.parameterId = parameterId
+        this.saved = saved
+        this.order = order
 
         if (values) {
             this.values = values
-        }
-    }
-
-    typeString() {
-        switch (this.type) {
-            case 1:
-                return "list of values"
-            case 2:
-                return "toggle"
-            case 3:
-                return "slider"
-        }
-    }
-
-    dataTypeString() {
-        switch (this.dataType) {
-            case 1:
-                return "integer"
-            case 2:
-                return "decimal"
-            case 3:
-                return "boolean"
         }
     }
 }

@@ -1,15 +1,15 @@
 <script setup lang='ts'>
 
-const props = defineProps(['name', 'value', 'min', 'max'])
+const props = defineProps(['param'])
 const emit = defineEmits(['change'])
 
-const min = parseFloat(props.min) || 0
-const max = parseFloat(props.max) || 1
+const min = parseFloat(props.param.minValue) || 0
+const max = parseFloat(props.param.maxValue) || 1
 const range = max - min
 
 function onChange(evt: InputEvent) {
     if (evt && evt.target && evt.target instanceof HTMLInputElement) {
-        emit('change', props.name, getValue(evt.target))
+        emit('change', props.param.name, getValue(evt.target))
     }
 }
 
@@ -20,11 +20,10 @@ function getValue(input: HTMLInputElement) {
 </script>
 
 <template>
-    <input class="slider" :value="(props.value - min) / range * 100" type="range" :name="name" @change="onChange"/>
+    <div class="h5">{{param.description}}</div>
+    <div class="text-center mb-1" v-if="param.image"><img :src="param.image" class="rounded-3" /></div>
+    <input class="w-75 form-range" :value="(param.value - min) / range * 100" type="range" :name="param.name" @change="onChange"/>
 </template>
 
 <style>
-input.slider {
-    margin-left: 5px;
-}
 </style>

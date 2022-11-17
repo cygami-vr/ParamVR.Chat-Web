@@ -4,6 +4,7 @@ import Status from '@/Status'
 import { reactive, ref, computed, onUnmounted } from 'vue'
 import Checkbox from '@/components/changer/Checkbox.vue'
 import Slider from '@/components/changer/Slider.vue'
+import LOV from '@/components/changer/LOV.vue'
 import ParameterKeysMenu from '@/components/changer/ParameterKeysMenu.vue'
 import StatusIcon from '@/components/changer/StatusIcon.vue'
 
@@ -117,10 +118,17 @@ const pingInterval = setInterval(() => {
 }, 60000)
 
 const connectionState = computed(() => {
+    console.log(`Determining connection state. WS=${state.wsConnected},
+     Connected=${status.value.connected}
+     VRC=${status.value.vrcOpen}`)
     if (!state.wsConnected) {
-        return null
+        return state.wsConnected
     }
-    return status.value.connected
+    if (!status.value.connected) {
+        return status.value.connected
+    }
+
+    return status.value.vrcOpen
 })
 
 onUnmounted(() => {
@@ -135,69 +143,63 @@ onUnmounted(() => {
 </script>
 
 <template>
-
-    <Header :msg="state.error" @ack="() => state.error = ''" />
-    <ParameterKeysMenu @change="reconnect" />
-
-    <div class="parameters">Changing parameters on {{ targetUser }}'s avatar{{ status.avatar ? ` ${status.avatar}` : '' }}.</div>
-
-    <div id="avatar" v-if="status.image"><img class="avatar" :src="status.image" /></div>
-
-    <div id="status">
-        <!-- Alternatives: cloud & cloud_off, power & power_off -->
-        <StatusIcon name="connection" icon_on="wifi" icon_off="wifi_off" :status="connectionState"
-         on_status="Live connection" off_status="No connection" />
-
-        <StatusIcon name="VRChat" icon_on="login" icon_off="logout" :status="status.vrcOpen"
-         on_status="VRChat is open" off_status="VRChat is closed" />
-
-        <StatusIcon name="AFK" icon_on="location_on" icon_off="location_off" :status="status.afk"
-         on_status="Not AFK" off_status="AFK" invert="true" />
-
-        <StatusIcon name="activity" icon_on="directions_run" icon_off="bedtime" :status="status.active"
-         on_status="Active" off_status="Inactive" />
-
-        <StatusIcon name="desktop" icon_on="desktop_windows" icon_off="desktop_access_disabled" :status="status.isPancake"
-         on_status="On desktop" off_status="In VR" />
-
-        <StatusIcon name="microphone" icon_on="mic" icon_off="mic_off" :status="status.muted"
-         on_status="Unmuted" off_status="Muted" invert="true" />
-    </div>
-
-    <div class="parameters">
-        <span v-if="parameters.length == 0">There are currently no available parameters to change.</span>
-
-        <div class="parameter" v-for="param in parameters" :key="param.name">
-
-            <div v-if="param.image"><img class="avatar" :src="param.image" /></div>
-            <span>{{param.description}}</span>
-            <div v-if="param.type == 1">
-                <!-- TODO change to radio button to allow selecting the active option? -->
-                <button v-for="value in param.values" :key="value.value" @click="() => trigger(param.name, value.value, param.dataType)">{{value.description}}</button>
+    <div class="container overflow-hidden">
+        <ParameterKeysMenu @change="reconnect" />
+        <div v-if="state.error" class="row justify-content-center mt-1">
+            <div class="p-3 w-75 rounded-3 alert alert-danger">{{state.error}}</div>
+        </div>
+        <div class="row justify-content-center mt-1">
+            <div v-if="status.image" class="row justify-content-center mb-2">
+                <div class="col-6 text-center"><img class="img-thumbnail" :src="status.image" /></div>
             </div>
+            <div class="p-3 w-50 text-center border bg-light rounded-3 h4">{{ targetUser }}'s avatar parameters</div>
+        </div>
+        <div class="row justify-content-center mt-1">
+            <div class="p-3 w-50 border bg-light rounded-3">
+                <div class="row justify-content-center text-center">
+                    <!-- Alternatives: cloud & cloud_off, power & power_off -->
+                    <StatusIcon name="connection" icon_on="wifi" icon_off="wifi_off" :status="connectionState"
+                        on_status="Live connection" off_status="No connection" />
 
-            <Checkbox v-else-if="param.type == 2" :name="param.name" :value="param.value"
-                @change="(name: string, selected: boolean) => trigger(name, selected.toString(), param.dataType)" />
-            
-            <Slider v-else-if="param.type == 3" :name="param.name" :value="param.value" :min="param.minValue" :max="param.maxValue"
-                @change="(name: string, value: number) => trigger(name, value.toString(), param.dataType)" />
+                    <StatusIcon name="AFK" icon_on="location_on" icon_off="location_off" :status="status.afk"
+                        on_status="Not AFK" off_status="AFK" invert="true" />
+
+                    <StatusIcon name="activity" icon_on="directions_run" icon_off="bedtime" :status="status.active"
+                        on_status="Active" off_status="Inactive" />
+
+                    <StatusIcon name="desktop" icon_on="desktop_windows" icon_off="desktop_access_disabled" :status="status.isPancake"
+                        on_status="On desktop" off_status="In VR" />
+
+                    <StatusIcon name="microphone" icon_on="mic" icon_off="mic_off" :status="status.muted"
+                        on_status="Unmuted" off_status="Muted" invert="true" />
+                </div>
+            </div>
+        </div>
+
+        <div class="row gy-3 justify-content-center mt-1" v-if="parameters.length == 0">
+            <div class="col-6 text-center">
+                <div class="p-3 alert alert-warning rounded-3" role="alert">
+                    There are currently no available parameters to change.
+                </div>
+            </div>
+        </div>
+
+        <div class="row gy-3 justify-content-center mt-1">   
+            <div class="col-6 text-center" v-for="param in parameters" :key="param.name">
+                <div class="p-3 border bg-light rounded-3">
+                    <LOV v-if="param.type == 1" :param="param"
+                        @change="(name: string, selected: string) => trigger(name, selected, param.dataType)" />
+
+                    <Checkbox v-else-if="param.type == 2" :param="param"
+                        @change="(name: string, selected: boolean) => trigger(name, selected.toString(), param.dataType)" />
+                    
+                    <Slider v-else-if="param.type == 3" :param="param"
+                        @change="(name: string, value: number) => trigger(name, value.toString(), param.dataType)" />
+                </div>
+            </div>
         </div>
     </div>
 </template>
 
 <style>
-#avatar {
-    margin: auto;
-    width: 0px;
-}
-#status {
-    margin-top: 8px;
-    text-align: center;
-}
-.parameters {
-    text-align: center;
-}
-.parameter {
-    margin-top: 15px;
-}
 </style>

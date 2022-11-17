@@ -43,34 +43,34 @@ class Status {
             switch (update.name) {
                 case 'afk':
                     this.afk = update.value
-                    break;
+                    break
                 case 'active':
                     this.active = update.value
-                    break;
+                    break
                 case 'isPancake':
                     this.isPancake = update.value
-                    break;
+                    break
                 case 'muted':
                     this.muted = update.value
-                    break;
+                    break
                 case 'avatar':
                     this.avatar = update.value
-                    break;
+                    break
                 case 'image':
                     this.image = update.value
-                    break;
+                    break
                 case 'connected':
                     if (!update.value) {
                         this.reset()
                     }
                     this.connected = update.value
-                    break;
+                    break
                 case 'vrcOpen':
                     if (!update.value) {
                         this.reset()
                     }
                     this.vrcOpen = update.value
-                    break;
+                    break
                 default:
                     return false
             }

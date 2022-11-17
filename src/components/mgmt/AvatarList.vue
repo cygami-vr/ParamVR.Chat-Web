@@ -1,27 +1,17 @@
 <script setup lang='ts'>
 import { reactive, ref } from 'vue'
-import ImageInput from '@/components/mgmt/ImageInput.vue'
 import Field from '@/components/mgmt/Field.vue'
+import ImageInput from '@/components/mgmt/ImageInput.vue'
 import fetchw from '@/fetchWrapper'
+import type Avatar from '@/Avatar'
 
-class Avatar {
-
-    id: number
-    vrcUuid: string
-    name: string
-    image: string
-
-    constructor(id: number, vrcUuid: string, name: string, image: string) {
-        this.id = id
-        this.vrcUuid = vrcUuid
-        this.name = name
-        this.image = image
-    }
-}
-
-const state = reactive({adding: false, name: '', vrcUuid: '', error: ''})
+const state = reactive({
+    name: '', vrcUuid: '', error: '',
+    activeAvatar: null as unknown as Avatar,
+    deletingAvatar: null as unknown as Avatar
+})
 const avatars = ref(new Array<Avatar>())
-defineEmits(['avatar-selected'])
+const emit = defineEmits(['avatar-selected'])
 
 function getAvatars() {
     fetchw('/avatar', {
@@ -30,6 +20,11 @@ function getAvatars() {
         if (resp.ok) {
             let json = await resp.json()
             avatars.value = json
+            if (state.activeAvatar) {
+                state.activeAvatar = json.find((avatar: Avatar) => {
+                    return avatar.id == state.activeAvatar.id
+                })
+            }
         } else {
             state.error = `Error: ${resp.statusText}`
         }
@@ -40,38 +35,15 @@ function getAvatars() {
 getAvatars()
 
 function addAvatar() {
-    if (state.adding) {
-        fetchw('/avatar', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                name: state.name,
-                vrcUuid: state.vrcUuid
-            })
-        }).then(resp => {
-            if (resp.ok) {
-                state.adding = false
-                getAvatars()
-            } else {
-                state.error = `Error: ${resp.statusText}`
-            }
-        }).catch(err => {
-            state.error = `Error: ${err}`
-        })
-    } else {
-        state.adding = true
-    }
-}
-
-function deleteAvatar(id: number) {
     fetchw('/avatar', {
-        method: 'DELETE',
+        method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ id })
+        body: JSON.stringify({
+            name: state.name,
+            vrcUuid: state.vrcUuid
+        })
     }).then(resp => {
         if (resp.ok) {
             getAvatars()
@@ -83,42 +55,117 @@ function deleteAvatar(id: number) {
     })
 }
 
+function deleteAvatar() {
+
+    fetchw('/avatar', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id: state.deletingAvatar.id })
+    }).then(resp => {
+        if (resp.ok) {
+            getAvatars()
+        } else {
+            state.error = `Error: ${resp.statusText}`
+        }
+    }).catch(err => {
+        state.error = `Error: ${err}`
+    })
+}
+
+function updateAvatarValue(value: any, prop: string, newParamValue: string) {
+    const newValue = {...value}
+    newValue[prop] = newParamValue
+
+    fetchw('/avatar', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newValue)
+    }).then(resp => {
+        if (resp.ok) {
+            getAvatars()
+        } else {
+            state.error = `Error: ${resp.statusText}`
+        }
+    }).catch(err => {
+        state.error = `Error: ${err}`
+    })
+}
+
+function onAvatarSelected(avatar: Avatar) {
+    emit('avatar-selected', avatar)
+    state.activeAvatar = avatar
+}
+
 </script>
 
 <template>
-    <div id="avatarList">
-        <Header :msg="state.error" @ack="() => state.error = ''" />
-        <template v-if="state.adding">
-            <input name="name" type="text" v-model="state.name" placeholder="name" />
-            <input name="vrcUuid" type="text" v-model="state.vrcUuid" placeholder="VRC UUID" />
-        </template>
-        <button @click="addAvatar">Add avatar</button>
+    <div>
+        <div class="row">
+            <div class="col-12 h5">Add an avatar</div>
+            <div class="col-5"><input name="name" type="text" v-model="state.name" placeholder="name" class="form-control" /></div>
+            <div class="col-5"><input name="vrcUuid" type="text" v-model="state.vrcUuid" placeholder="VRC UUID" class="form-control" /></div>
+            <div class="col-2"><button type="button" class="btn btn-primary" @click="addAvatar">Add Avatar</button></div>
+        </div>
+        <div class="h5">Avatars</div>
+        <div v-if="avatars.length == 0">You have no avatars. Create one to get started.</div>
+        <div v-if="state.error" class="alert alert-danger">{{state.error}}</div>
+        <div class="input-group mb-2" v-for="avatar in avatars" :key="avatar.id">
+            <div class="input-group-text">
+                <input class="form-check-input mt-0" type="radio" name="avatarList" @change="evt => onAvatarSelected(avatar)" />
+            </div>
+            
+            <Field :value="avatar.name" :editable="true" @change="name => updateAvatarValue(avatar, 'name', name)" label="Avatar name" />
+            <Field :value="avatar.vrcUuid" :editable="true" @change="vrcUuid => updateAvatarValue(avatar, 'vrcUuid', vrcUuid)" label="VRC UUID" />
 
-        <fieldset>
-            <legend>Active avatar</legend>
-            <div id="avatars">
-                <div v-for="avatar in avatars" :key="avatar.id">
-                    <img class="avatar" :src="avatar.image" />
-                    <input name="avatar" type="radio" :id="avatar.vrcUuid" @change="evt => $emit('avatar-selected', avatar.id)" />
-                    <label :for="avatar.vrcUuid">
-                        <Field :value="avatar.name" />
-                        <Field :value="avatar.vrcUuid" />
-                    </label>
-                    <ImageInput url="/avatar/image" idProperty="avatarId" :idValue="avatar.id" @image-uploaded="getAvatars" />
-                    <span title="Delete avatar" class="clickable delete-button material-icons" @click="() => deleteAvatar(avatar.id)">delete</span>
+            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteAvatar-confirm"
+             @click="() => state.deletingAvatar = avatar">Delete</button>
+        </div>
+        <template v-if="state.activeAvatar">
+            <div class="h5">Avatar image</div>
+            <div v-if="state.activeAvatar.image" class="row justify-content-center">
+                <div class="col-4 text-center">
+                    <img class="img-thumbnail" :src="state.activeAvatar.image" />
                 </div>
             </div>
-        </fieldset>
+            <div class="input-group mb-2 mt-2">
+                <ImageInput url="/avatar/image" idProperty="avatarId" :idValue="state.activeAvatar.id" @image-uploaded="getAvatars" @error="err => state.error = err" />
+            </div>
+            <div>
+                Note: The image will be scaled to have a maximum width/height of 512, preserving aspect ratio.
+            </div>
+        </template>
+    </div>
+    <div id="deleteAvatar-confirm" class="modal fade" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Really delete this avatar?</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
+                </div>
+                <div class="modal-body">
+                    <div v-if="state.deletingAvatar" class="row g-3 justify-content-start">
+                        <div class="col-12">Avatar name: {{state.deletingAvatar.name}}</div>
+                        <div class="col-12">Avatar VRC UUID: {{state.deletingAvatar.vrcUuid}}</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="row">
+                        <div class="col">
+                            <button type="button" class="btn btn-primary" @click="deleteAvatar" data-bs-dismiss="modal">Yes</button>
+                        </div>
+                        <div class="col">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
 <style>
-#avatarList {
-    margin: auto;
-    width: 80%;
-}
-#avatars div:nth-child(odd) {
-    background-color: rgba(200, 200, 200, 0.25);
-    border-radius: 10px;
-}
 </style>

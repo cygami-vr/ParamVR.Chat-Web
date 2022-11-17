@@ -10,4 +10,4 @@ class ParameterValue {
     }
 }
 
-export default ParameterValue;
+export default ParameterValue

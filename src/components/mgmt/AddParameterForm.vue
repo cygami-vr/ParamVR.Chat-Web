@@ -66,28 +66,27 @@ function onTypeChange() {
 </script>
 
 <template>
-    <Header :msg="state.error" @ack="() => state.error = ''" />
-    <div id="addParamForm">
-        <input v-model="state.parameter.name" name="name" type="text" placeholder="parameter name" />
-        <select v-model="state.parameter.type" name="type" @change="onTypeChange">
+    <div class="row h5"><div class="col">Add a parameter</div></div>
+    <div v-if="state.error" class="row">
+        <div class="col alert alert-danger">{{state.error}}</div>
+    </div>
+    <div class="row">
+        <div class="col-4"><input class="form-control" v-model="state.parameter.name" name="name" type="text" placeholder="parameter name" /></div>
+        <div class="col-3"><select class="form-select" v-model="state.parameter.type" name="type" @change="onTypeChange">
             <option value="0" selected>Type</option>
             <option value="1">List of values</option>
             <option value="2">Toggle on/off</option>
             <option value="3">Slider</option>
-        </select>
-        <select v-model="state.parameter.dataType" name="dataType">
+        </select></div>
+        <div class="col-3"><select class="form-select" v-model="state.parameter.dataType" name="dataType">
             <option value="0" selected>Data type</option>
             <option v-if="state.parameter.type == 1" value="1">Integer</option>
             <option v-if="state.parameter.type == 1 || state.parameter.type == 3" value="2">Decimal</option>
             <option v-if="state.parameter.type == 2" value="3">Boolean</option>
-        </select>
-        <button @click="addParameter">Add Parameter</button>
+        </select></div>
+        <div class="col-2"><button type="button" class="btn btn-primary" @click="addParameter">Add Parameter</button></div>
     </div>
 </template>
 
 <style>
-#addParamForm {
-    margin: auto;
-    width: 80%;
-}
 </style>

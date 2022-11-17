@@ -49,27 +49,20 @@ function validateFloat() {
     return asFloat >= 0 && asFloat <= 1
 }
 
+function saveOrEdit() {
+    if (state.editing) {
+        save()
+    } else {
+        edit()
+    }
+}
+
 </script>
 
 <template>
-    <template v-if="state.editing">
-        <input v-model="state.value" type="text" :placeholder="label" ref="input" />
-        <span class="material-icons clickable" @click="save">save</span>
-    </template>
-    <template v-else>
-        <!-- TODO would rather not have the field class on the label. Seems to be needed due to inline-block. -->
-        <span class="field" v-if="label">{{label}}:</span>
-        <span class="field" v-if="!state.editing" :title="value">{{value}}</span>
-        <span v-if="editable" class="material-icons clickable" @click="edit">edit</span>
-    </template>
+    <input type="text" class="form-control" v-model="state.value" :placeholder="label" ref="input" :disabled="!state.editing" :readonly="!props.editable" />
+    <button v-if="editable" type="button" @click="saveOrEdit" class="btn btn-primary">{{state.editing ? 'Save' : 'Edit'}}</button>
 </template>
 
 <style>
-.field {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    width: 100px;
-    display: inline-block;
-}
 </style>
