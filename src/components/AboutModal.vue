@@ -22,6 +22,7 @@ fetchw('/discord', {
                 </div>
                 <div class="modal-body">
                     <a class="btn btn-primary" :href="state.discordInvite" target="_blank" role="button">Interested in ParamVR? Join the Discord community!</a>
+                    <a class="btn btn-info mt-3" href="https://github.com/cygami-vr/" target="_blank" role="button">Check out the source code on GitHub</a>
                     <a class="btn btn-secondary mt-3" href="https://www.flaticon.com/free-icons/toggle-button" target="_blank" role="button">
                         Toggle button icons created by Icon Mela - Flaticon
                     </a>

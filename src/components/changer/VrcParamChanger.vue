@@ -113,7 +113,7 @@ const reconnectInterval = setInterval(() => {
 const pingInterval = setInterval(() => {
     if (state.wsConnected) {
         console.log('Pinging activity')
-        socket.send(JSON.stringify({name: 'minepop-activity', value: '', dataType: 0}))
+        socket.send(JSON.stringify({name: 'chat-paramvr-activity', value: '', dataType: 0}))
     }
 }, 60000)
 
