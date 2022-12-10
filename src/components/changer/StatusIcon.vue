@@ -1,6 +1,6 @@
 <script setup lang='ts'>
 
-const props = defineProps(['name', 'icon_on', 'icon_off', 'status', 'on_status', 'off_status', 'invert'])
+const props = defineProps(['icon_on', 'icon_off', 'status', 'on_status', 'off_status', 'invert'])
 
 const invert = props.invert == 'true'
 

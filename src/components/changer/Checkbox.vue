@@ -2,7 +2,7 @@
 import { ref, watch } from 'vue'
 
 const props = defineProps(['param'])
-const emit = defineEmits(['change'])
+const emit = defineEmits(['change', 'lock'])
 const input = ref(null as unknown as HTMLInputElement)
 
 function onChange(evt: Event) {
@@ -24,12 +24,20 @@ watch(() => props.param.value, after => {
 
 <template>
     <div class="text-center mb-2" v-if="param.image"><img :src="param.image" class="rounded-3" /></div>
-    <label class="form-check form-switch" :for="param.name">
-        <div class="align-items-center justify-content-between">
-            <input class="form-check-input" :checked="isTrue(param.value)" type="checkbox" :name="param.name" :id="param.name" @change="onChange" ref="input" />
-            <div class="form-check-label h5" :title="param.description">{{param.description}}</div>
+    <div class="row align-items-center justify-content-between">
+        <div class="col-4 flex-grow-1">
+            <label class="form-check form-switch" :for="param.name">
+                <input class="form-check-input" :disabled="param.locked" :checked="isTrue(param.value)" type="checkbox" :name="param.name" :id="param.name" @change="onChange" ref="input" />
+                <div class="form-check-label h5 text-break" :title="param.description">{{param.description}}</div>
+            </label>
         </div>
-    </label>
+        <div v-if="param.lockable == 'Y'" class="col-4 text-end">
+            <button type="button" :class="`btn btn-primary-outline material-icons
+             ${param.locked ? (param.lockKey != null ? 'text-primary' : 'text-danger') : 'text-muted'}`" @click="$emit('lock')">
+                {{param.locked ? 'lock' : 'lock_open'}}
+            </button>
+        </div>
+    </div>
 </template>
 
 <style>

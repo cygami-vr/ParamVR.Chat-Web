@@ -132,7 +132,7 @@ function onAvatarSelected(avatar: Avatar) {
                 </div>
             </div>
             <div class="input-group mb-2 mt-2">
-                <ImageInput url="/avatar/image" idProperty="avatarId" :idValue="state.activeAvatar.id" @image-uploaded="getAvatars" @error="err => state.error = err" />
+                <ImageInput url="/avatar/image" idProperty="avatarId" :idValue="state.activeAvatar.id" @image-changed="getAvatars" @error="err => state.error = err" />
             </div>
             <div>
                 Note: The image will be scaled to have a maximum width/height of 512, preserving aspect ratio.

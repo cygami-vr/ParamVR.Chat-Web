@@ -5,6 +5,7 @@ import { reactive, ref, computed, onUnmounted } from 'vue'
 import Checkbox from '@/components/changer/Checkbox.vue'
 import Slider from '@/components/changer/Slider.vue'
 import LOV from '@/components/changer/LOV.vue'
+import Button from '@/components/changer/Button.vue'
 import ParameterKeysMenu from '@/components/changer/ParameterKeysMenu.vue'
 import StatusIcon from '@/components/changer/StatusIcon.vue'
 
@@ -23,6 +24,10 @@ if (isDev) {
     url = `wss://${location.host}/parameter-trigger`
 }
 
+let buttonClicks = new Map()
+let buttonTimeouts = new Map()
+
+console.log(`WebSocket URL = ${url}`)
 let socket: WebSocket
 
 function handleData(data: any) {
@@ -34,7 +39,15 @@ function handleData(data: any) {
     } else if (!status.value.update(data)) {
         parameters.value.forEach(param => {
             if (param.name == data.name) {
-                param.value = data.value
+                switch (data.type) {
+                    case 'value':
+                        param.value = data.value
+                        break
+                    case 'lock':
+                        param.locked = data.locked
+                        param.lockKey = data.lockKey
+                        break
+                }
             }
         })
     }
@@ -47,7 +60,8 @@ function connect() {
         state.wsConnected = true
         state.error = ''
         socket.send(props.targetUser)
-        socket.send(localStorage.getItem('parameterKeys') || '')
+        socket.send(localStorage.getItem(`${props.targetUser}-parameterKeys`) || '')
+        socket.send(localStorage.getItem('uuid') || 'New-Trigger')
     })
     socket.addEventListener('close', evt => {
         console.log('WebSocket closed')
@@ -66,7 +80,8 @@ function connect() {
         }
     })
     socket.addEventListener('error', evt => {
-        console.log(`WebSocket error: ${evt}`)
+        // Surprisingly, most of the information in the error event seems useless.
+        console.log('WebSocket error', evt)
     })
 }
 
@@ -74,46 +89,85 @@ connect()
 
 let sendTimeout: number = -1
 
-function trigger(name: string, value: string, dataType: number) {
+function send(key: string, value: any) {
 
-    console.log(`Scheduling trigger ${name} = ${value}`)
+    console.log(`Scheduling send ${sendTimeout}`)
+    updates.set(key, value)
 
-    if (updates.size == 0) {
+    if (sendTimeout == -1) {
         sendTimeout = setTimeout(() => {
 
-            console.log(`Sending ${updates.size} triggers`)
-
-            updates.forEach((value, key) => {
-                socket.send(JSON.stringify(value))
-            })
-
+            console.log(`Sending ${updates.size} updates`)
+            socket.send(JSON.stringify(Array.from(updates.values())))
             updates.clear()
             sendTimeout = -1
 
         }, 100)
     }
+}
 
-    updates.set(name, {
-        name, value, dataType
+function triggerButton(name: string, value : string, dataType: number) {
+    trigger(name, value, dataType)
+    buttonClicks.set(name, Date.now())
+}
+
+function releaseButton(name: string, value: string, dataType: number, minPressTime: number) {
+    // The release will most likely get delayed by an additional 100ms due to the sendTimeout
+    let timeRemaining = minPressTime - (Date.now() - buttonClicks.get(name)) - 100
+    console.log(`Releasing button ${name}. Time remaining = ${timeRemaining}`)
+    if (timeRemaining <= 0) {
+        trigger(name, value, dataType)
+    } else {
+        let timeout = buttonTimeouts.get(name)
+        if (timeout) {
+            clearInterval(timeout)
+        }
+        timeout = setTimeout(() => trigger(name, value, dataType), timeRemaining)
+        buttonTimeouts.set(name, timeout)
+    }
+}
+
+function trigger(name: string, value: string, dataType: number) {
+    console.log(`Scheduling trigger ${name} = ${value}`)
+    send(`trigger-${name}`, {
+        change: {
+            name, value, dataType
+        }
+    })
+}
+
+function lock(name: string, locked: boolean) {
+    console.log(`Scheduling lock ${name} = ${locked}`)
+    send(`lock-${name}`, {
+        lock: {
+            name, locked
+        }
     })
 }
 
 function reconnect() {
-    socket.close()
-    connect()
+    try {
+        socket.close()
+    } catch (err) {
+        console.warn(`Error closing old websocket when reconnecting: ${err}`)
+    } finally {
+        connect()
+    }
 }
 
 const reconnectInterval = setInterval(() => {
     if (!state.wsConnected) {
         console.log('Attempting auto reconnect')
-        connect()
+        reconnect()
     }
 }, 10000)
 
 const pingInterval = setInterval(() => {
     if (state.wsConnected) {
         console.log('Pinging activity')
-        socket.send(JSON.stringify({name: 'chat-paramvr-activity', value: '', dataType: 0}))
+        send('activity-ping', {
+            change: { name: 'chat-paramvr-activity', value: '', dataType: 0 }
+        })
     }
 }, 60000)
 
@@ -144,7 +198,7 @@ onUnmounted(() => {
 
 <template>
     <div class="container overflow-hidden">
-        <ParameterKeysMenu @change="reconnect" />
+        <ParameterKeysMenu :target-user="targetUser" @change="reconnect" />
         <div v-if="state.error" class="row justify-content-center mt-1">
             <div class="p-3 w-75 rounded-3 alert alert-danger">{{state.error}}</div>
         </div>
@@ -186,15 +240,23 @@ onUnmounted(() => {
 
         <div class="row gy-3 justify-content-center mt-1">   
             <div class="col-6 text-center" v-for="param in parameters" :key="param.name">
-                <div class="p-3 border bg-light rounded-3">
+                <div class="p-2 border bg-light rounded-3">
                     <LOV v-if="param.type == 1" :param="param"
-                        @change="(name: string, selected: string) => trigger(name, selected, param.dataType)" />
+                        @change="(name: string, selected: string) => trigger(name, selected, param.dataType)"
+                        @lock="() => lock(param.name, !param.locked)" />
 
                     <Checkbox v-else-if="param.type == 2" :param="param"
-                        @change="(name: string, selected: boolean) => trigger(name, selected.toString(), param.dataType)" />
+                        @change="(name: string, selected: boolean) => trigger(name, selected.toString(), param.dataType)"
+                        @lock="() => lock(param.name, !param.locked)" />
                     
                     <Slider v-else-if="param.type == 3" :param="param"
-                        @change="(name: string, value: number) => trigger(name, value.toString(), param.dataType)" />
+                        @change="(name: string, value: number) => trigger(name, value.toString(), param.dataType)"
+                        @lock="() => lock(param.name, !param.locked)" />
+
+                    <Button v-else-if="(param.type == 4)" :param="param"
+                        @click="(name: string) => triggerButton(name, param.pressValue, param.dataType)"
+                        @release="(name: string) => releaseButton(name, param.defaultValue, param.dataType, param.minValue)"
+                        @lock="() => lock(param.name, !param.locked)" />
                 </div>
             </div>
         </div>

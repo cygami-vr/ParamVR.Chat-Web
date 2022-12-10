@@ -2,9 +2,11 @@
 import { reactive } from 'vue'
 import AboutButton from '@/components/AboutButton.vue'
 
+const props = defineProps(['targetUser'])
+const localStorageKey = `${props.targetUser}-parameterKeys`
 const state = reactive({
-    parameterKeys: (localStorage.getItem('parameterKeys') || '').split(',').filter(s => s.length > 0),
-    parameterKey: ''
+    parameterKey: '',
+    parameterKeys: (localStorage.getItem(localStorageKey) || '').split(',').filter(s => s.length > 0)
 })
 const emit = defineEmits(['change'])
 
@@ -22,7 +24,7 @@ function deleteParameterKey(key: string) {
 }
 
 function save() {
-    localStorage.setItem('parameterKeys', state.parameterKeys.toString())
+    localStorage.setItem(`${props.targetUser}-parameterKeys`, state.parameterKeys.toString())
 }
 
 </script>

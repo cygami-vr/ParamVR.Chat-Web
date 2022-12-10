@@ -93,6 +93,10 @@ const typeString = computed(() => {
             return "toggle"
         case 3:
             return "slider"
+        case 4:
+            return "button"
+        default:
+            return "unknown"
     }
 })
 
@@ -104,12 +108,20 @@ const dataTypeString = computed(() => {
             return "decimal"
         case 3:
             return "boolean"
+        default:
+            return "unknown"
     }
 })
 
 function onSavedChange(evt: Event) {
     if (evt && evt.target && evt.target instanceof HTMLInputElement) {
         updateParameter('saved', evt.target.checked ? 'Y' : 'N')
+    }
+}
+
+function onLockableChange(evt: Event) {
+    if (evt && evt.target && evt.target instanceof HTMLInputElement) {
+        updateParameter('lockable', evt.target.checked ? 'Y' : 'N')
     }
 }
 
@@ -122,18 +134,13 @@ function onSavedChange(evt: Event) {
             <div><span class="h5">{{parameter.name}}</span>{{` - ${typeString}, ${dataTypeString}`}}</div>
             <div class="row align-items-center text-start mt-1">
                 <div class="col-3">Description:</div>
-                <div class="col-7">
+                <div class="col-9">
                     <div class="input-group">
                         <Field :editable="true" :value="parameter.description" @change="value => updateParameter('description', value)" label="description" />
                     </div>
                 </div>
-                <div class="col-2 form-check">
-                    <input class="form-check-input" :checked="parameter.saved == 'Y'" type="checkbox"
-                     :id="`savedCheckbox${parameter.parameterId}`" @change="evt => onSavedChange(evt)" />
-                    <label class="form-check-label" :for="`savedCheckbox${parameter.parameterId}`">Is saved</label>
-                </div>
             </div>
-            <div class="row align-items-center text-start mt-1">
+            <div v-if="parameter.type != 4" class="row align-items-center text-start mt-1">
                 <div class="col-3">Default value:</div>
                 <div class="col-9">
                     <div class="input-group">
@@ -167,6 +174,52 @@ function onSavedChange(evt: Event) {
                     </div>
                 </div>
             </template>
+            <template v-else-if="parameter.type == 4">
+                <div class="row align-items-center text-start mt-1">
+                    <div class="col-3">Press value:</div>
+                    <div class="col-9">
+                        <div class="input-group">
+                            <Field :editable="true" :value="parameter.pressValue" @change="value => updateParameter('pressValue', value)" label="press value" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row align-items-center text-start mt-1">
+                    <div class="col-3">Release value:</div>
+                    <div class="col-9">
+                        <div class="input-group">
+                            <Field :editable="true" :value="parameter.defaultValue" @change="value => updateParameter('defaultValue', value)" label="release value" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row align-items-center text-start mt-1">
+                    <div class="col-3">Min press time (ms):</div>
+                    <div class="col-9">
+                        <div class="input-group">
+                            <Field :editable="true" :value="parameter.minValue" @change="value => updateParameter('minValue', value)" label="min press time" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row align-items-center text-start mt-1">
+                    <div class="col-3">Max press time (ms):</div>
+                    <div class="col-9">
+                        <div class="input-group">
+                            <Field :editable="true" :value="parameter.maxValue" @change="value => updateParameter('maxValue', value)" label="max press time" />
+                        </div>
+                    </div>
+                </div>
+            </template>
+            <div class="row align-items-center ms-1 mt-2">
+                <div class="col-3 form-check">
+                    <input class="form-check-input" :checked="parameter.saved == 'Y'" type="checkbox"
+                     :id="`savedCheckbox${parameter.parameterId}`" @change="evt => onSavedChange(evt)" />
+                    <label class="form-check-label" :for="`savedCheckbox${parameter.parameterId}`">Is saved</label>
+                </div>
+                <div class="col-3 form-check">
+                    <input class="form-check-input" :checked="parameter.lockable == 'Y'" type="checkbox"
+                     :id="`lockableCheckbox${parameter.parameterId}`" @change="evt => onLockableChange(evt)" />
+                    <label class="form-check-label" :for="`lockableCheckbox${parameter.parameterId}`">Is lockable</label>
+                </div>
+            </div>
             <template v-if="parameter.type == 1">
                 <div class="h5 mt-1">Values</div>
                 <div v-if="parameter.values.length == 0">No values added yet.</div>
@@ -198,7 +251,7 @@ function onSavedChange(evt: Event) {
                 </div>
                 <div class="input-group mb-2 mt-2">
                     <ImageInput url="/parameter/image" idProperty="parameterId" :idValue="parameter.parameterId"
-                    @image-uploaded="() => $emit('parameter-changed')" @error="err => state.error = err" />
+                    @image-changed="() => $emit('parameter-changed')" @error="err => state.error = err" />
                 </div>
                 <div>
                     Note: The image will be scaled to have a maximum width/height of 128, preserving aspect ratio.

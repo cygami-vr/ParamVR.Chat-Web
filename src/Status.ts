@@ -8,9 +8,11 @@ class Status {
     afk?: boolean
     active?: boolean
     vrcOpen?: boolean
+
+    uuid?: string
     
     constructor(connected?: boolean, muted?: boolean, isPancake?: boolean, avatar?: string,
-         afk?: boolean, active?: boolean, vrcOpen?: boolean) {
+         afk?: boolean, active?: boolean, vrcOpen?: boolean, uuid?: string) {
             
         this.connected = connected
         this.muted = muted
@@ -19,6 +21,7 @@ class Status {
         this.afk = afk
         this.active = active
         this.vrcOpen = vrcOpen
+        this.uuid = uuid
     }
 
     reset() {
@@ -41,6 +44,9 @@ class Status {
             this.image = update.status.image
         } else {
             switch (update.name) {
+                case 'uuid':
+                    localStorage.setItem('uuid', update.value)
+                    break
                 case 'afk':
                     this.afk = update.value
                     break

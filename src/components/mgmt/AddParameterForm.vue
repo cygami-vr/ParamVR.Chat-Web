@@ -77,12 +77,13 @@ function onTypeChange() {
             <option value="1">List of values</option>
             <option value="2">Toggle on/off</option>
             <option value="3">Slider</option>
+            <option value="4">Button</option>
         </select></div>
         <div class="col-3"><select class="form-select" v-model="state.parameter.dataType" name="dataType">
             <option value="0" selected>Data type</option>
-            <option v-if="state.parameter.type == 1" value="1">Integer</option>
-            <option v-if="state.parameter.type == 1 || state.parameter.type == 3" value="2">Decimal</option>
-            <option v-if="state.parameter.type == 2" value="3">Boolean</option>
+            <option v-if="state.parameter.type == 1 || state.parameter.type == 4" value="1">Integer</option>
+            <option v-if="state.parameter.type == 1 || state.parameter.type == 3 || state.parameter.type == 4" value="2">Decimal</option>
+            <option v-if="state.parameter.type == 2 || state.parameter.type == 4" value="3">Boolean</option>
         </select></div>
         <div class="col-2"><button type="button" class="btn btn-primary" @click="addParameter">Add Parameter</button></div>
     </div>

@@ -7,7 +7,7 @@ const state = reactive({discordInvite: ''})
 fetchw('/discord', {
     method: 'GET'
 }).then(async resp => {
-    const text = await resp.json()
+    const text = await resp.text()
     state.discordInvite = text
 })
 </script>

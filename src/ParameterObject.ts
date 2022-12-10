@@ -12,16 +12,22 @@ class ParameterObject {
     defaultValue: string
     minValue: string
     maxValue: string
+    pressValue: string
     values: Array<ParameterValue> = []
     value: string = ''
     parameterId: number
     saved: string
+    lockable: string
+    locked: boolean
+    lockKey: string
     order: number
     image: string = ''
     
     constructor(description: string, name: string, key: string, type: number, dataType: number,
-         avatarName: string, avatarVrcUuid: string, defaultValue: string, minValue: string, maxValue: string,
-         parameterId: number, saved: string, order: number, values?: Array<ParameterValue>) {
+         avatarName: string, avatarVrcUuid: string,
+         defaultValue: string, minValue: string, maxValue: string, pressValue: string,
+         parameterId: number, saved: string, lockable: string, locked: boolean, lockKey: string,
+         order: number, values?: Array<ParameterValue>) {
 
         this.description = description
         this.name = name
@@ -33,8 +39,12 @@ class ParameterObject {
         this.defaultValue = defaultValue
         this.minValue = minValue
         this.maxValue = maxValue
+        this.pressValue = pressValue
         this.parameterId = parameterId
         this.saved = saved
+        this.lockable = lockable
+        this.locked = locked
+        this.lockKey = lockKey
         this.order = order
 
         if (values) {

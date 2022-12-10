@@ -30,8 +30,6 @@ function generateListenKey() {
     }).then(async resp => {
         if (resp.ok) {
             let key = await resp.text()
-            // remove the quotes
-            key = key.substring(1, key.length - 1)
             state.listenKey = key
             state.error = ''
         } else {
