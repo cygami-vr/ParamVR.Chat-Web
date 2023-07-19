@@ -3,10 +3,10 @@ import { reactive, ref } from 'vue'
 import Field from '@/components/mgmt/Field.vue'
 import ImageInput from '@/components/mgmt/ImageInput.vue'
 import fetchw from '@/fetchWrapper'
-import type Avatar from '@/Avatar'
+import type Avatar from '@/model/Avatar'
 
 const state = reactive({
-    name: '', vrcUuid: '', error: '',
+    name: '', vrcUuid: '',
     activeAvatar: null as unknown as Avatar,
     deletingAvatar: null as unknown as Avatar
 })
@@ -17,19 +17,13 @@ function getAvatars() {
     fetchw('/avatar', {
         method: 'GET'
     }).then(async resp => {
-        if (resp.ok) {
-            let json = await resp.json()
-            avatars.value = json
-            if (state.activeAvatar) {
-                state.activeAvatar = json.find((avatar: Avatar) => {
-                    return avatar.id == state.activeAvatar.id
-                })
-            }
-        } else {
-            state.error = `Error: ${resp.statusText}`
+        let json = await resp.json()
+        avatars.value = json
+        if (state.activeAvatar) {
+            state.activeAvatar = json.find((avatar: Avatar) => {
+                return avatar.id == state.activeAvatar.id
+            })
         }
-    }).catch(err => {
-        state.error = `Error: ${err}`
     })
 }
 getAvatars()
@@ -45,13 +39,7 @@ function addAvatar() {
             vrcUuid: state.vrcUuid
         })
     }).then(resp => {
-        if (resp.ok) {
-            getAvatars()
-        } else {
-            state.error = `Error: ${resp.statusText}`
-        }
-    }).catch(err => {
-        state.error = `Error: ${err}`
+        getAvatars()
     })
 }
 
@@ -64,13 +52,7 @@ function deleteAvatar() {
         },
         body: JSON.stringify({ id: state.deletingAvatar.id })
     }).then(resp => {
-        if (resp.ok) {
-            getAvatars()
-        } else {
-            state.error = `Error: ${resp.statusText}`
-        }
-    }).catch(err => {
-        state.error = `Error: ${err}`
+        getAvatars()
     })
 }
 
@@ -85,13 +67,7 @@ function updateAvatarValue(value: any, prop: string, newParamValue: string) {
         },
         body: JSON.stringify(newValue)
     }).then(resp => {
-        if (resp.ok) {
-            getAvatars()
-        } else {
-            state.error = `Error: ${resp.statusText}`
-        }
-    }).catch(err => {
-        state.error = `Error: ${err}`
+        getAvatars()
     })
 }
 
@@ -112,7 +88,6 @@ function onAvatarSelected(avatar: Avatar) {
         </div>
         <div class="h5">Avatars</div>
         <div v-if="avatars.length == 0">You have no avatars. Create one to get started.</div>
-        <div v-if="state.error" class="alert alert-danger">{{state.error}}</div>
         <div class="input-group mb-2" v-for="avatar in avatars" :key="avatar.id">
             <div class="input-group-text">
                 <input class="form-check-input mt-0" type="radio" name="avatarList" @change="evt => onAvatarSelected(avatar)" />
@@ -132,7 +107,7 @@ function onAvatarSelected(avatar: Avatar) {
                 </div>
             </div>
             <div class="input-group mb-2 mt-2">
-                <ImageInput url="/avatar/image" idProperty="avatarId" :idValue="state.activeAvatar.id" @image-changed="getAvatars" @error="err => state.error = err" />
+                <ImageInput url="/avatar/image" idProperty="avatarId" :idValue="state.activeAvatar.id" @image-changed="getAvatars" />
             </div>
             <div>
                 Note: The image will be scaled to have a maximum width/height of 512, preserving aspect ratio.

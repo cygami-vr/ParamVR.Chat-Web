@@ -4,7 +4,7 @@ import fetchw from '@/fetchWrapper'
 
 const state = reactive({ file: null as unknown as File })
 const props = defineProps(['idProperty', 'idValue', 'url'])
-const emit = defineEmits(['image-changed', 'error'])
+const emit = defineEmits(['image-changed'])
 
 function uploadImage() {
 
@@ -21,13 +21,7 @@ function uploadImage() {
         method: 'POST',
         body: formData
     }).then(resp => {
-        if (resp.ok) {
-            emit('image-changed')
-        } else {
-            emit('error', `Error: ${resp.statusText}`)
-        }
-    }).catch(err => {
-        emit('error', `Error: ${err}`)
+        emit('image-changed')
     })
 }
 
@@ -36,13 +30,7 @@ function deleteImage() {
         method: 'DELETE',
         body: props.idValue
     }).then(resp => {
-        if (resp.ok) {
-            emit('image-changed')
-        } else {
-            emit('error', `Error: ${resp.statusText}`)
-        }
-    }).catch(err => {
-        emit('error', `Error: ${err}`)
+        emit('image-changed')
     })
 }
 

@@ -6,8 +6,7 @@ const props = defineProps(['avatarId'])
 const state = reactive({
     parameter: {
         name: '', type: 0, dataType: 0, avatarId: 0
-    },
-    error: ''
+    }
 })
 const emit = defineEmits(['parameter-added'])
 
@@ -41,13 +40,7 @@ function addParameter() {
         },
         body: JSON.stringify(state.parameter)
     }).then(resp => {
-        if (resp.ok) {
-            emit('parameter-added')
-        } else {
-            state.error = `Error: ${resp.statusText}`
-        }
-    }).catch(err => {
-        state.error = `Error: ${err}`
+        emit('parameter-added')
     })
 
     state.parameter.name = ''
@@ -60,6 +53,8 @@ function onTypeChange() {
     } else if (state.parameter.type == 3) {
         // slider type only supports float data type
         state.parameter.dataType = 2
+    } else {
+        state.parameter.dataType = 0
     }
 }
 
@@ -67,9 +62,6 @@ function onTypeChange() {
 
 <template>
     <div class="row h5"><div class="col">Add a parameter</div></div>
-    <div v-if="state.error" class="row">
-        <div class="col alert alert-danger">{{state.error}}</div>
-    </div>
     <div class="row">
         <div class="col-4"><input class="form-control" v-model="state.parameter.name" name="name" type="text" placeholder="parameter name" /></div>
         <div class="col-3"><select class="form-select" v-model="state.parameter.type" name="type" @change="onTypeChange">

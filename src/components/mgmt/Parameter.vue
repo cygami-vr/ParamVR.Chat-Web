@@ -4,7 +4,7 @@ import Field from '@/components/mgmt/Field.vue'
 import ImageInput from '@/components/mgmt/ImageInput.vue'
 import fetchw from '@/fetchWrapper'
 
-const state = reactive({ value: '', error: '' })
+const state = reactive({ value: '' })
 const props = defineProps(['parameter'])
 const emit = defineEmits(['parameter-changed', 'drop'])
 
@@ -16,13 +16,7 @@ function changeParameter(url: string, method: string, body: any) {
         },
         body: JSON.stringify(body)
     }).then(resp => {
-        if (resp.ok) {
-            emit('parameter-changed')
-        } else {
-            state.error = `Error: ${resp.statusText}`
-        }
-    }).catch(err => {
-        state.error = `Error: ${err}`
+        emit('parameter-changed')
     })
 }
 
@@ -66,16 +60,13 @@ function dragStart(evt: DragEvent) {
         evt.dataTransfer.effectAllowed = 'move'
         evt.dataTransfer.dropEffect = 'move'
         evt.dataTransfer.setData('parameterId', props.parameter.parameterId)
-        console.log('yeet')
+        console.log('dataTransfer initialized')
     }
     return true
 }
 
 function dragOver(e: DragEvent) {
     console.log('dragOver')
-    if (e.dataTransfer) {
-        
-    }
 }
 
 function drop(evt: DragEvent) {
@@ -88,28 +79,28 @@ function drop(evt: DragEvent) {
 const typeString = computed(() => {
     switch (props.parameter.type) {
         case 1:
-            return "list of values"
+            return 'list of values'
         case 2:
-            return "toggle"
+            return 'toggle'
         case 3:
-            return "slider"
+            return 'slider'
         case 4:
-            return "button"
+            return 'button'
         default:
-            return "unknown"
+            return 'unknown'
     }
 })
 
 const dataTypeString = computed(() => {
     switch (props.parameter.dataType) {
         case 1:
-            return "integer"
+            return 'integer'
         case 2:
-            return "decimal"
+            return 'decimal'
         case 3:
-            return "boolean"
+            return 'boolean'
         default:
-            return "unknown"
+            return 'unknown'
     }
 })
 
@@ -122,6 +113,12 @@ function onSavedChange(evt: Event) {
 function onLockableChange(evt: Event) {
     if (evt && evt.target && evt.target instanceof HTMLInputElement) {
         updateParameter('lockable', evt.target.checked ? 'Y' : 'N')
+    }
+}
+
+function onRequiresInviteChange(evt: Event) {
+    if (evt && evt.target && evt.target instanceof HTMLInputElement) {
+        updateParameter('requiresInvite', evt.target.checked ? 'Y' : 'N')
     }
 }
 
@@ -145,14 +142,6 @@ function onLockableChange(evt: Event) {
                 <div class="col-9">
                     <div class="input-group">
                         <Field :editable="true" :value="parameter.defaultValue" @change="value => updateParameter('defaultValue', value)" label="default value" />
-                    </div>
-                </div>
-            </div>
-            <div class="row align-items-center text-start mt-1">
-                <div class="col-3">Password:</div>
-                <div class="col-9">
-                    <div class="input-group">
-                        <Field :editable="true" :value="parameter.key" @change="value => updateParameter('key', value)" label="password" />
                     </div>
                 </div>
             </div>
@@ -219,6 +208,11 @@ function onLockableChange(evt: Event) {
                      :id="`lockableCheckbox${parameter.parameterId}`" @change="evt => onLockableChange(evt)" />
                     <label class="form-check-label" :for="`lockableCheckbox${parameter.parameterId}`">Is lockable</label>
                 </div>
+                <div class="col-3 form-check">
+                    <input class="form-check-input" :checked="parameter.requiresInvite == 'Y'" type="checkbox"
+                     :id="`requiresInviteCheckbox${parameter.parameterId}`" @change="evt => onRequiresInviteChange(evt)" />
+                    <label class="form-check-label" :for="`requiresInviteCheckbox${parameter.parameterId}`">Requires invite</label>
+                </div>
             </div>
             <template v-if="parameter.type == 1">
                 <div class="h5 mt-1">Values</div>
@@ -234,15 +228,11 @@ function onLockableChange(evt: Event) {
                         <div class="input-group">
                             <Field :editable="true" :value="value.description" label="Description" @change="desc => updateParameterValue(value, 'description', desc)" />
                             <Field :value="value.value" label="Value" />
-                            <Field :editable="true" :value="value.key" label="Password" @change="key => updateParameterValue(value, 'key', key)" />
                             <button type="button" class="btn btn-outline-danger" @click="() => deleteParameterValue(parameter.parameterId, value.value)">Delete</button>
                         </div>
                     </div>
                 </div>
             </template>
-            <div v-if="state.error" class="row mt-3 alert alert-danger">
-                {{state.error}}
-            </div>
             <div class="collapse" :id="`parameterImage${parameter.parameterId}`">
                 <div v-if="parameter.image" class="row justify-content-center mt-2">
                     <div class="col-4 text-center">
@@ -250,8 +240,7 @@ function onLockableChange(evt: Event) {
                     </div>
                 </div>
                 <div class="input-group mb-2 mt-2">
-                    <ImageInput url="/parameter/image" idProperty="parameterId" :idValue="parameter.parameterId"
-                    @image-changed="() => $emit('parameter-changed')" @error="err => state.error = err" />
+                    <ImageInput url="/parameter/image" idProperty="parameterId" :idValue="parameter.parameterId" @image-changed="() => $emit('parameter-changed')" />
                 </div>
                 <div>
                     Note: The image will be scaled to have a maximum width/height of 128, preserving aspect ratio.

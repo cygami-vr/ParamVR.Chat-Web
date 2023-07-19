@@ -5,11 +5,12 @@ import AccountMenu from '@/components/mgmt/AccountMenu.vue'
 import AddParameterForm from '@/components/mgmt/AddParameterForm.vue'
 import Parameter from '@/components/mgmt/Parameter.vue'
 import AvatarList from '@/components/mgmt/AvatarList.vue'
-import type ParameterObject from '@/ParameterObject'
+import InviteList from '@/components/mgmt/InviteList.vue'
+import type ParameterObject from '@/model/ParameterObject'
 import fetchw from '@/fetchWrapper'
-import type Avatar from '@/Avatar'
+import type Avatar from '@/model/Avatar'
 
-const state = reactive({ userName: '', avatar: null as unknown as Avatar, error: '' })
+const state = reactive({ userName: '', avatar: null as unknown as Avatar })
 const parameters = ref(new Array<ParameterObject>())
 
 function loggedIn(userName: string) {
@@ -18,18 +19,11 @@ function loggedIn(userName: string) {
 }
 
 function reloadParameters() {
-
     fetchw('/parameter', {
         method: 'GET'
     }).then(async resp => {
-        if (resp.ok) {
-            let json = await resp.json()
-            parameters.value = json
-        } else {
-            state.error = `Error: ${resp.statusText}`
-        }
-    }).catch(err => {
-        state.error = `Error: ${err}`
+        let json = await resp.json()
+        parameters.value = json
     })
 }
 
@@ -66,12 +60,6 @@ function drop(idA: number, idB: number) {
             parameterIds: ids
         })
     }).then(async resp => {
-        if (!resp.ok) {
-            state.error = `Error: ${resp.statusText}`
-        }
-        reloadParameters()
-    }).catch(err => {
-        state.error = `Error: ${err}`
         reloadParameters()
     })
 }
@@ -82,15 +70,18 @@ function drop(idA: number, idB: number) {
     <AccountMenu v-if="state.userName" :name="state.userName" @logged-out="loggedOut" />
     <div class="container overflow-hidden">
         <template v-if="state.userName">
-            <div v-if="state.error" class="row mt-1">
-                <div class="p-3 w-100 alert alert-danger rounded-3">
-                    {{state.error}}
+            <div class="row mt-1">
+                <div class="p-3 w-100 border bg-light rounded-3">
+                    <div class="row">
+                        <AvatarList @avatar-selected="avatar => state.avatar = avatar" />
+                    </div>
                 </div>
             </div>
             <div class="row mt-1">
                 <div class="p-3 w-100 border bg-light rounded-3">
                     <div class="row">
-                        <AvatarList @avatar-selected="avatar => state.avatar = avatar" />
+                        <InviteList v-if="state.avatar" :avatarId="state.avatar.id" :parameters="parameters" />
+                        <div v-else>Select an avatar to manage invites.</div>
                     </div>
                 </div>
             </div>

@@ -14,13 +14,7 @@ function logout() {
     fetchw('/logout', {
         method: 'POST'
     }).then(resp => {
-        if (resp.ok) {
-            emit('logged-out')
-        } else {
-            state.error = `Error: ${resp.statusText}`
-        }
-    }).catch(err => {
-        state.error = `Error: ${err}`
+        emit('logged-out')
     })
 }
 
@@ -28,15 +22,9 @@ function generateListenKey() {
     fetchw('/parameter/listen-key', {
         method: 'POST'
     }).then(async resp => {
-        if (resp.ok) {
-            let key = await resp.text()
-            state.listenKey = key
-            state.error = ''
-        } else {
-            state.error = `Error: ${resp.statusText}`
-        }
-    }).catch(err => {
-        state.error = `Error: ${err}`
+        let key = await resp.text()
+        state.listenKey = key
+        state.error = ''
     })
 }
 
@@ -49,16 +37,10 @@ function changePassword(evt: MouseEvent) {
             },
             body: JSON.stringify({ newPassword: state.password })
         }).then(resp => {
-            if (resp.ok) {
-                reset()
-                if (closeBtn.value) {
-                    closeBtn.value.click()
-                }
-            } else {
-                state.error = `Error: ${resp.statusText}`
+            reset()
+            if (closeBtn.value) {
+                closeBtn.value.click()
             }
-        }).catch(err => {
-            state.error = `Error: ${err}`
         })
     } else {
         state.error = 'Passwords do not match!'
@@ -165,7 +147,6 @@ function copyParameterKey() {
                             Make sure to save it somewhere.
                             If it is lost, you may need to generate a new key.
                         </div>
-                        <div v-else="state.error" class="col-12 alert alert-danger">{{state.error}}</div>
                     </div>
                 </div>
             </div>

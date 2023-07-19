@@ -1,21 +1,28 @@
-const isDev = window.origin.indexOf('localhost') === 7 || window.origin.indexOf('127.0.0.1') === 7
+import env from '@/environment'
 
 async function fetchWrapper(input: RequestInfo, init?: RequestInit) {
-  
-    if (isDev) {
-        // dev env
 
-        if (!init) {
-            init = {}
-        }
-        init.credentials = 'include'
-    
-        const module = await import('./portConfig.js')
-        input = `http://localhost:${module.default.devServer}${input}`
-        return await fetch(input, init)
-    }
+    return new Promise<Response>((resolve, reject) => {
   
-    return await fetch(input, init)
+        if (!env.isProduction) {
+    
+            if (!init) {
+                init = {}
+            }
+            init.credentials = 'include'
+            input = `http://localhost:${env.developmentPort}${input}`
+        }
+      
+        fetch(input, init).then(resp => {
+            if (resp.ok) {
+                resolve(resp)
+            } else {
+                reject(new Error(`${resp.status} ${resp.statusText}`))
+            }
+        }).catch(err => {
+            reject(err)
+        })
+    })
 }
   
-  export default fetchWrapper
+export default fetchWrapper

@@ -1,87 +1,79 @@
-class Status {
+class StatusProperty {
 
-    connected?: boolean
-    muted?: boolean
-    isPancake?: boolean
-    avatar?: string
-    image?: string
-    afk?: boolean
-    active?: boolean
-    vrcOpen?: boolean
+    name: string
+    shouldReset: boolean
+    status: boolean
+    value?: string | boolean | undefined
 
-    uuid?: string
-    
-    constructor(connected?: boolean, muted?: boolean, isPancake?: boolean, avatar?: string,
-         afk?: boolean, active?: boolean, vrcOpen?: boolean, uuid?: string) {
-            
-        this.connected = connected
-        this.muted = muted
-        this.isPancake = isPancake
-        this.avatar = avatar
-        this.afk = afk
-        this.active = active
-        this.vrcOpen = vrcOpen
-        this.uuid = uuid
+    constructor(name: string, reset?: boolean, status?: boolean) {
+        this.name = name
+        this.shouldReset = reset === undefined ? true : reset
+        this.status = status === undefined ? true : status
     }
 
     reset() {
-        this.afk = undefined
-        this.active = undefined
-        this.isPancake = undefined
-        this.muted = undefined
-        this.avatar = undefined
-        this.vrcOpen = undefined
+        if (this.shouldReset) {
+            this.value = undefined
+        }
+    }
+
+    setValue(value: string | boolean | undefined) {
+        this.value = value
+        this.handleValueChange()
+    }
+
+    handleValueChange() {}
+}
+
+class Status {
+
+    props: Map<string, StatusProperty> = new Map()
+
+    constructor() {
+        [ 'afk', 'active', 'isPancake', 'muted', 'avatar'
+         ].forEach(s => this.initSimpleProp(s))
+        this.initSimpleProp('image', false)
+        this.initResetProp('connected', false)
+        this.initResetProp('vrcOpen', true)
+    }
+
+    initSimpleProp(name: string, reset?: boolean, status?: boolean) {
+        this.props.set(name, new StatusProperty(name, reset, status))
+    }
+
+    initResetProp(name: string, isStatus: boolean) {
+        let status = this
+        this.props.set(name, new class extends StatusProperty {
+            handleValueChange() {
+                status.resetAll()
+            }
+        }(name, false, isStatus))
+    }
+
+    resetAll() {
+        this.props.forEach(prop => prop.reset())
+    }
+
+    getProp(name: string) {
+        let prop = this.props.get(name)
+        return prop ? prop.value : null
     }
 
     update(update: any) {
         if (update.status) {
-            this.afk = update.status.afk
-            this.active = update.status.active
-            this.isPancake = update.status.isPancake
-            this.muted = update.status.muted
-            this.avatar = update.status.avatar
-            this.vrcOpen = update.status.vrcOpen
-            this.image = update.status.image
+            this.props.forEach(prop => {
+                if (prop.status) {
+                    prop.setValue(update.status[prop.name])
+                }
+            })
+            return true
         } else {
-            switch (update.name) {
-                case 'uuid':
-                    localStorage.setItem('uuid', update.value)
-                    break
-                case 'afk':
-                    this.afk = update.value
-                    break
-                case 'active':
-                    this.active = update.value
-                    break
-                case 'isPancake':
-                    this.isPancake = update.value
-                    break
-                case 'muted':
-                    this.muted = update.value
-                    break
-                case 'avatar':
-                    this.avatar = update.value
-                    break
-                case 'image':
-                    this.image = update.value
-                    break
-                case 'connected':
-                    if (!update.value) {
-                        this.reset()
-                    }
-                    this.connected = update.value
-                    break
-                case 'vrcOpen':
-                    if (!update.value) {
-                        this.reset()
-                    }
-                    this.vrcOpen = update.value
-                    break
-                default:
-                    return false
+            let prop = this.props.get(update.name)
+            if (prop) {
+                prop.setValue(update.value)
             }
+            return prop ? true : false
         }
-        return true
     }
 }
 
