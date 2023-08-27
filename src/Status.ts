@@ -1,28 +1,21 @@
 class StatusProperty {
 
     name: string
-    shouldReset: boolean
+    resettable: boolean
+    triggersReset: boolean
     status: boolean
     value?: string | boolean | undefined
 
-    constructor(name: string, reset?: boolean, status?: boolean) {
+    constructor(name: string, resettable?: boolean, triggersReset?: boolean, status?: boolean) {
         this.name = name
-        this.shouldReset = reset === undefined ? true : reset
+        this.resettable = resettable === undefined ? true : resettable
+        this.triggersReset = triggersReset === undefined ? false : triggersReset
         this.status = status === undefined ? true : status
-    }
-
-    reset() {
-        if (this.shouldReset) {
-            this.value = undefined
-        }
     }
 
     setValue(value: string | boolean | undefined) {
         this.value = value
-        this.handleValueChange()
     }
-
-    handleValueChange() {}
 }
 
 class Status {
@@ -31,27 +24,23 @@ class Status {
 
     constructor() {
         [ 'afk', 'active', 'isPancake', 'muted', 'avatar'
-         ].forEach(s => this.initSimpleProp(s))
-        this.initSimpleProp('image', false)
-        this.initResetProp('connected', false)
-        this.initResetProp('vrcOpen', true)
+         ].forEach(s => this.initProp(s))
+        this.initProp('image', false)
+        this.initProp('connected', false, true, false)
+        this.initProp('vrcOpen', false, true)
     }
 
-    initSimpleProp(name: string, reset?: boolean, status?: boolean) {
-        this.props.set(name, new StatusProperty(name, reset, status))
-    }
-
-    initResetProp(name: string, isStatus: boolean) {
-        let status = this
-        this.props.set(name, new class extends StatusProperty {
-            handleValueChange() {
-                status.resetAll()
-            }
-        }(name, false, isStatus))
+    initProp(name: string, resettable?: boolean, triggersReset?: boolean, status?: boolean) {
+        this.props.set(name, new StatusProperty(name, resettable, triggersReset, status))
     }
 
     resetAll() {
-        this.props.forEach(prop => prop.reset())
+        console.log('Resetting props')
+        this.props.forEach(prop => {
+            if (prop.resettable) {
+                prop.setValue(undefined)
+            }
+        })
     }
 
     getProp(name: string) {
@@ -60,20 +49,33 @@ class Status {
     }
 
     update(update: any) {
+        let resetAll = false
+        let updateHandled
         if (update.status) {
             this.props.forEach(prop => {
                 if (prop.status) {
-                    prop.setValue(update.status[prop.name])
+                    let val = update.status[prop.name]
+                    prop.setValue(val)
+                    if (!val && prop.triggersReset) {
+                        resetAll = true
+                    }
                 }
             })
-            return true
+            updateHandled = true
         } else {
             let prop = this.props.get(update.name)
             if (prop) {
                 prop.setValue(update.value)
+                if (!update.value && prop.triggersReset) {
+                    resetAll = true
+                }
             }
-            return prop ? true : false
+            updateHandled = prop ? true : false
         }
+        if (resetAll) {
+            this.resetAll()
+        }
+        return updateHandled
     }
 }
 

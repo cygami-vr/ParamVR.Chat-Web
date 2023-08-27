@@ -210,7 +210,9 @@ const connectionState = computed(() => {
 
 function statusComputed(prop: string) {
     return computed(() => {
-        return state.status.getProp(prop) as string
+        let val = state.status.getProp(prop) as string
+        console.log(`Computing value of ${prop} = ${val}`)
+        return val
     })
 }
 const imageState = statusComputed('image')
