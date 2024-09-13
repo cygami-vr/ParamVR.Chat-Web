@@ -35,6 +35,8 @@ function addValue(parameterId: number) {
         parameterId,
         value: state.value
     })
+
+    state.value = ''
 }
 
 function updateParameter(prop: string, value: string) {
@@ -219,7 +221,7 @@ function onRequiresInviteChange(evt: Event) {
                 <div v-if="parameter.values.length == 0">No values added yet.</div>
                 <div class="row mt-1">
                     <div class="input-group">
-                        <input type="text" class="form-control" v-model="state.value" placeholder="parameter value" />
+                        <input type="text" class="form-control" v-model="state.value" v-on:keyup.enter="() => addValue(parameter.parameterId)" placeholder="parameter value" />
                         <button type="button" class="btn btn-primary" @click="() => addValue(parameter.parameterId)">Add Value</button>
                     </div>
                 </div>

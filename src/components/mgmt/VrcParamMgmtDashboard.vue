@@ -80,7 +80,7 @@ function drop(idA: number, idB: number) {
             <div class="row mt-1">
                 <div class="p-3 w-100 border bg-light rounded-3">
                     <div class="row">
-                        <InviteList v-if="state.avatar" :avatarId="state.avatar.id" :parameters="parameters" />
+                        <InviteList v-if="state.avatar" :avatarId="state.avatar.vrcUuid" :parameters="parameters" />
                         <div v-else>Select an avatar to manage invites.</div>
                     </div>
                 </div>

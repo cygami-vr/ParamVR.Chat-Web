@@ -17,7 +17,11 @@ async function fetchWrapper(input: RequestInfo, init?: RequestInit) {
             if (resp.ok) {
                 resolve(resp)
             } else {
-                reject(new Error(`${resp.status} ${resp.statusText}`))
+                resp.text().then(text => {
+                    reject(new Error(`${text}`))
+                }).catch(err => {
+                    reject(new Error(`${resp.status} ${resp.statusText}`))
+                })
             }
         }).catch(err => {
             reject(err)
