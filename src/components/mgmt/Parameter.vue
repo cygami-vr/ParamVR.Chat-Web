@@ -128,9 +128,11 @@ function onRequiresInviteChange(evt: Event) {
 
 <template>
     <div class="col-6 text-center">
-        <div class="p-3 border bg-light rounded-3"
-         :draggable="true" @dragstart="e => dragStart(e)" @dragend="e => dragOver(e)" @drop="drop" @dragover.prevent @dragenter.prevent>
-            <div><span class="h5">{{parameter.name}}</span>{{` - ${typeString}, ${dataTypeString}`}}</div>
+        <div class="p-3 border bg-light rounded-3">
+            <div class="draggable" :draggable="true" @dragstart="e => dragStart(e)" @dragend="e => dragOver(e)" @drop="drop" @dragover.prevent @dragenter.prevent
+                title="Click and drag to reorder your parameters">
+                <span class="h5">{{parameter.name}}</span>{{` - ${typeString}, ${dataTypeString}`}}
+            </div>
             <div class="row align-items-center text-start mt-1">
                 <div class="col-3">Description:</div>
                 <div class="col-9">
@@ -285,4 +287,9 @@ function onRequiresInviteChange(evt: Event) {
 </template>
 
 <style>
+
+.draggable:hover {
+    cursor: move;
+}
+
 </style>
