@@ -1,10 +1,10 @@
 <script setup lang='ts'>
-import { reactive, ref, nextTick } from 'vue'
+import { reactive, ref, nextTick, type Ref } from 'vue'
 
 const props = defineProps(['editable', 'value', 'label', 'type'])
 const state = reactive({editing: false, value: props.value || ''})
 const emit = defineEmits(['change'])
-const input = ref(null as any)
+const input = ref(null as unknown as Ref)
 
 async function edit() {
     state.editing = true

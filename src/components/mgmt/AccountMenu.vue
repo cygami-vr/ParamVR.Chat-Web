@@ -13,7 +13,7 @@ defineProps(['name'])
 function logout() {
     fetchw('/logout', {
         method: 'POST'
-    }).then(resp => {
+    }).then(() => {
         emit('logged-out')
     })
 }
@@ -22,13 +22,13 @@ function generateListenKey() {
     fetchw('/parameter/listen-key', {
         method: 'POST'
     }).then(async resp => {
-        let key = await resp.text()
+        const key = await resp.text()
         state.listenKey = key
         state.error = ''
     })
 }
 
-function changePassword(evt: MouseEvent) {
+function changePassword() {
     if (state.password == state.confirmPassword) {
         fetchw('/account', {
             method: 'POST',
@@ -36,7 +36,7 @@ function changePassword(evt: MouseEvent) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ newPassword: state.password })
-        }).then(resp => {
+        }).then(() => {
             reset()
             if (closeBtn.value) {
                 closeBtn.value.click()

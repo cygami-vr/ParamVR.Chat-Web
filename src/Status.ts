@@ -1,3 +1,5 @@
+import { type WebSocketMessage } from '@/model/ParameterPayloads'
+
 class StatusProperty {
 
     name: string
@@ -44,31 +46,31 @@ class Status {
     }
 
     getProp(name: string) {
-        let prop = this.props.get(name)
+        const prop = this.props.get(name)
         return prop ? prop.value : null
     }
 
-    update(update: any) {
+    update(update: WebSocketMessage) {
         let resetAll = false
         let updateHandled
-        if (update.status) {
+        if (update.status.size > 0) {
             this.props.forEach(prop => {
                 if (prop.status) {
-                    let val = update.status[prop.name]
-                    prop.setValue(val)
-                    if (!val && prop.triggersReset) {
-                        resetAll = true
-                    }
+                  const val = update.status.get(prop.name)
+                  prop.setValue(val)
+                  if (!val && prop.triggersReset) {
+                      resetAll = true
+                  }
                 }
             })
             updateHandled = true
         } else {
-            let prop = this.props.get(update.name)
+            const prop = this.props.get(update.name)
             if (prop) {
-                prop.setValue(update.value)
-                if (!update.value && prop.triggersReset) {
-                    resetAll = true
-                }
+              prop.setValue(update.value)
+              if (!update.value && prop.triggersReset) {
+                  resetAll = true
+              }
             }
             updateHandled = prop ? true : false
         }

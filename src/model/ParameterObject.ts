@@ -1,6 +1,6 @@
 import type ParameterValue from '@/model/ParameterValue'
 
-interface ParameterObject {
+export default interface ParameterObject {
 
     description: string
     name: string
@@ -23,5 +23,3 @@ interface ParameterObject {
     order: number
     image: string
 }
-
-export default ParameterObject

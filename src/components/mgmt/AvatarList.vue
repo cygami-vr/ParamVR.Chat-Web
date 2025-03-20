@@ -17,7 +17,7 @@ function getAvatars() {
     fetchw('/avatar', {
         method: 'GET'
     }).then(async resp => {
-        let json = await resp.json()
+        const json = await resp.json()
         avatars.value = json
         if (state.activeAvatar) {
             state.activeAvatar = json.find((avatar: Avatar) => {
@@ -38,9 +38,7 @@ function addAvatar() {
             name: state.name,
             vrcUuid: state.vrcUuid
         })
-    }).then(resp => {
-        getAvatars()
-    })
+    }).then(getAvatars)
 }
 
 function deleteAvatar() {
@@ -51,9 +49,7 @@ function deleteAvatar() {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({ id: state.deletingAvatar.id })
-    }).then(resp => {
-        getAvatars()
-    })
+    }).then(getAvatars)
 }
 
 function updateAvatarValue(value: any, prop: string, newParamValue: string) {
@@ -66,9 +62,7 @@ function updateAvatarValue(value: any, prop: string, newParamValue: string) {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(newValue)
-    }).then(resp => {
-        getAvatars()
-    })
+    }).then(getAvatars)
 }
 
 function onAvatarSelected(avatar: Avatar) {
@@ -92,7 +86,7 @@ function onAvatarSelected(avatar: Avatar) {
             <div class="input-group-text">
                 <input class="form-check-input mt-0" type="radio" name="avatarList" @change="evt => onAvatarSelected(avatar)" />
             </div>
-            
+
             <Field :value="avatar.name" :editable="true" @change="name => updateAvatarValue(avatar, 'name', name)" label="Avatar name" />
             <Field :value="avatar.vrcUuid" :editable="true" @change="vrcUuid => updateAvatarValue(avatar, 'vrcUuid', vrcUuid)" label="VRC UUID" />
 

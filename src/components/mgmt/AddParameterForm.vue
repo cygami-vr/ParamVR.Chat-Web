@@ -39,7 +39,7 @@ function addParameter() {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(state.parameter)
-    }).then(resp => {
+    }).then(() => {
         emit('parameter-added')
     })
 

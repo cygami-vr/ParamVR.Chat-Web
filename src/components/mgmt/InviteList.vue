@@ -14,7 +14,7 @@ function getInvites() {
     fetchw('/invite', {
         method: 'GET'
     }).then(async resp => {
-        let json = await resp.json()
+        const json = await resp.json()
         invites.value = json
     })
 }
@@ -44,7 +44,7 @@ function createInvite() {
         body: JSON.stringify({
             expires
         })
-    }).then(resp => {
+    }).then(() => {
         getInvites()
     })
 }

@@ -11,7 +11,7 @@ function onChange(evt: Event) {
     }
 }
 
-function isTrue(val: any) {
+function isTrue(val: boolean | string) {
     return val === true || val === 'true'
 }
 

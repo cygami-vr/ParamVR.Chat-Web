@@ -22,7 +22,7 @@ function reloadParameters() {
     fetchw('/parameter', {
         method: 'GET'
     }).then(async resp => {
-        let json = await resp.json()
+        const json = await resp.json()
         parameters.value = json
     })
 }
@@ -38,14 +38,14 @@ const activeParameters = computed(() => {
 
 function drop(idA: number, idB: number) {
     console.log(`drop ${idA} to ${idB}`)
-    let idxA = parameters.value.findIndex(param => param.parameterId == idA)
-    let idxB = parameters.value.findIndex(param => param.parameterId == idB)
+    const idxA = parameters.value.findIndex(param => param.parameterId == idA)
+    const idxB = parameters.value.findIndex(param => param.parameterId == idB)
 
-    let temp = parameters.value[idxA]
+    const temp = parameters.value[idxA]
     parameters.value[idxA] = parameters.value[idxB]
     parameters.value[idxB] = temp
 
-    let ids: Array<number> = []
+    const ids: Array<number> = []
 
     activeParameters.value.forEach(param => {
         ids.push(param.parameterId)
@@ -59,9 +59,7 @@ function drop(idA: number, idB: number) {
         body: JSON.stringify({
             parameterIds: ids
         })
-    }).then(async resp => {
-        reloadParameters()
-    })
+    }).then(reloadParameters)
 }
 
 </script>

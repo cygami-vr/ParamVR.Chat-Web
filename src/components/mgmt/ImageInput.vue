@@ -20,7 +20,7 @@ function uploadImage() {
     fetchw(props.url, {
         method: 'POST',
         body: formData
-    }).then(resp => {
+    }).then(() => {
         emit('image-changed')
     })
 }
@@ -29,7 +29,7 @@ function deleteImage() {
     fetchw(props.url, {
         method: 'DELETE',
         body: props.idValue
-    }).then(resp => {
+    }).then(() => {
         emit('image-changed')
     })
 }

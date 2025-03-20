@@ -7,7 +7,7 @@ const min = parseFloat(props.param.minValue) || 0
 const max = parseFloat(props.param.maxValue) || 1
 const range = max - min
 
-function onChange(evt: InputEvent) {
+function onChange(evt: Event) {
     if (evt && evt.target && evt.target instanceof HTMLInputElement) {
         emit('change', props.param.name, getValue(evt.target))
     }

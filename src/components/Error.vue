@@ -3,8 +3,8 @@ import { reactive, ref, onMounted } from 'vue'
 import * as bootstrap from 'bootstrap'
 
 const state = reactive({error: ''})
-const modalEl = ref(null as any)
-let modal: any
+const modalEl = ref(null as unknown as Element)
+let modal: bootstrap.Modal
 
 window.addEventListener('unhandledrejection', evt => {
     state.error = evt.reason

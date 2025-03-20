@@ -1,6 +1,7 @@
 <script setup lang='ts'>
 import env from '@/environment'
 import type ParameterObject from '@/model/ParameterObject'
+import { type Change, ParameterChange, ParameterLock, WebSocketMessage } from '@/model/ParameterPayloads'
 import Status from '@/Status'
 import { reactive, ref, computed, onUnmounted } from 'vue'
 import Checkbox from '@/components/changer/Checkbox.vue'
@@ -14,7 +15,7 @@ import fetchw from '@/fetchWrapper'
 const state = reactive({ wsConnected: false, error: '', targetUser: '', status: new Status() })
 const parameters = ref(new Array<ParameterObject>())
 const props = defineProps(['targetType', 'target'])
-const updates = new Map<string, any>()
+const updates = new Map<string, Change>()
 let connecting = false
 
 let url: string
@@ -30,7 +31,7 @@ const buttonTimeouts = new Map<string, number>()
 console.log(`WebSocket URL = ${url}`)
 let socket: WebSocket
 
-function handleData(data: any) {
+function handleData(data: WebSocketMessage) {
     if (data.constructor == Array) {
         parameters.value = data
         parameters.value.forEach(param => {
@@ -59,7 +60,7 @@ function handleData(data: any) {
 
 function createSession() {
     connecting = true
-    let clientId = document.cookie.split('; ').find(row => row.startsWith('uuid='))?.substring(5)
+    const clientId = document.cookie.split('; ').find(row => row.startsWith('uuid='))?.substring(5)
     fetchw('/trigger-connect', {
         method: 'POST',
             headers: {
@@ -71,7 +72,7 @@ function createSession() {
                 clientId: clientId
             })
     }).then(async resp => {
-        let session = await resp.json()
+        const session = await resp.json()
         state.targetUser = session.targetUser
         document.cookie = `uuid=${session.clientId};max-age=2000000000`
         connect(session.sessionId)
@@ -80,14 +81,14 @@ function createSession() {
 
 function connect(sessionId: string) {
     socket = new WebSocket(url)
-    socket.addEventListener('open', evt => {
+    socket.addEventListener('open', () => {
         console.log('WebSocket opened')
         socket.send(sessionId)
         state.wsConnected = true
         state.error = ''
         connecting = false
     })
-    socket.addEventListener('close', evt => {
+    socket.addEventListener('close', () => {
         console.log('WebSocket closed')
         state.wsConnected = false
         state.error = 'Server connection lost; you can refresh the page or we will try to reconnect automatically soon'
@@ -97,11 +98,17 @@ function connect(sessionId: string) {
     })
     socket.addEventListener('message', evt => {
         console.log(`Message received: ${evt.data}`)
-        let data = JSON.parse(evt.data)
-        if (typeof data == 'object') {
-            handleData(data)
-        } else {
-            console.warn('data is unexpected type')
+        const data = JSON.parse(evt.data)
+        const type = typeof data
+        if (type === 'object') {
+            const msg = new WebSocketMessage()
+            Object.assign(msg, data)
+            if (data.status) {
+              msg.status = new Map(Object.entries(data.status))
+            }
+            handleData(msg)
+        } else if (data !== 'Connected') {
+            console.warn('data is unexpected type: ' + type)
         }
     })
     socket.addEventListener('error', evt => {
@@ -112,7 +119,7 @@ function connect(sessionId: string) {
 
 let sendTimeout: number = -1
 
-function send(key: string, value: any) {
+function send(key: string, value: Change) {
 
     console.log(`Scheduling send ${sendTimeout}`)
     updates.set(key, value)
@@ -137,9 +144,9 @@ function triggerButton(name: string, value : string, dataType: number) {
 function releaseButton(name: string, value: string, dataType: number, minPressTime: string) {
 
     // The release will most likely get delayed by an additional 100ms due to the sendTimeout
-    let minPressTimeAsInt = parseInt(minPressTime)
+    const minPressTimeAsInt = parseInt(minPressTime)
     let timeRemaining = minPressTimeAsInt - 100
-    let timePressStarted = buttonClicks.get(name)
+    const timePressStarted = buttonClicks.get(name)
     if (timePressStarted) {
         timeRemaining -= Date.now() - timePressStarted
     }
@@ -159,20 +166,12 @@ function releaseButton(name: string, value: string, dataType: number, minPressTi
 
 function trigger(name: string, value: string, dataType: number) {
     console.log(`Scheduling trigger ${name} = ${value}`)
-    send(`trigger-${name}`, {
-        change: {
-            name, value, dataType
-        }
-    })
+    send(`trigger-${name}`, new ParameterChange(name, value, dataType))
 }
 
 function lock(name: string, locked: boolean) {
     console.log(`Scheduling lock ${name} = ${locked}`)
-    send(`lock-${name}`, {
-        lock: {
-            name, locked
-        }
-    })
+    send(`lock-${name}`, new ParameterLock(name, locked))
 }
 
 function reconnect() {
@@ -202,15 +201,15 @@ const pingInterval = setInterval(() => {
 }, 60000)
 
 const connectionState = computed(() => {
-    let connected = state.status.getProp('connected')
-    let vrcOpen = state.status.getProp('vrcOpen')
+    const connected = state.status.getProp('connected')
+    const vrcOpen = state.status.getProp('vrcOpen')
     console.log(`Determining connection state. WS=${state.wsConnected}, Connected=${connected}, VRC=${vrcOpen}`)
     return state.wsConnected && connected && vrcOpen ? true : false
 })
 
 function statusComputed(prop: string) {
     return computed(() => {
-        let val = state.status.getProp(prop) as string
+        const val = state.status.getProp(prop) as string
         console.log(`Computing value of ${prop} = ${val}`)
         return val
     })
@@ -288,7 +287,7 @@ createSession()
                     <Checkbox v-else-if="param.type == 2" :param="param"
                         @change="(name: string, selected: boolean) => trigger(name, selected.toString(), param.dataType)"
                         @lock="() => lock(param.name, !param.locked)" />
-                    
+
                     <Slider v-else-if="param.type == 3" :param="param"
                         @change="(name: string, value: number) => trigger(name, value.toString(), param.dataType)"
                         @lock="() => lock(param.name, !param.locked)" />
