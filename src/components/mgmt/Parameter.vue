@@ -2,20 +2,21 @@
 import { reactive, computed } from 'vue'
 import Field from '@/components/mgmt/Field.vue'
 import ImageInput from '@/components/mgmt/ImageInput.vue'
+import type ParameterObject from '@/model/ParameterObject'
 import fetchw from '@/fetchWrapper'
 
 const state = reactive({ value: '' })
 const props = defineProps(['parameter'])
 const emit = defineEmits(['parameter-changed', 'drop'])
 
-function changeParameter(url: string, method: string, body: any) {
+function changeParameter(url: string, method: string, body: object) {
     fetchw(url, {
         method,
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(body)
-    }).then(resp => {
+    }).then(() => {
         emit('parameter-changed')
     })
 }
@@ -49,9 +50,9 @@ function deleteParameterValue(parameterId: number, value: string) {
     changeParameter('/parameter/value', 'DELETE', { parameterId, value })
 }
 
-function updateParameterValue(value: any, prop: string, newParamValue: string) {
+function updateParameterDescription(value: ParameterObject, desc: string) {
     const newValue = {...value}
-    newValue[prop] = newParamValue
+    newValue.description = desc
     newValue.parameterId = props.parameter.parameterId
     changeParameter('/parameter/value', 'POST', newValue)
 }
@@ -67,7 +68,7 @@ function dragStart(evt: DragEvent) {
     return true
 }
 
-function dragOver(e: DragEvent) {
+function dragOver() {
     console.log('dragOver')
 }
 
@@ -129,7 +130,7 @@ function onRequiresInviteChange(evt: Event) {
 <template>
     <div class="col-6 text-center">
         <div class="p-3 border bg-light rounded-3">
-            <div class="draggable" :draggable="true" @dragstart="e => dragStart(e)" @dragend="e => dragOver(e)" @drop="drop" @dragover.prevent @dragenter.prevent
+            <div class="draggable" :draggable="true" @dragstart="e => dragStart(e)" @dragend="e => dragOver()" @drop="drop" @dragover.prevent @dragenter.prevent
                 title="Click and drag to reorder your parameters">
                 <span class="h5">{{parameter.name}}</span>{{` - ${typeString}, ${dataTypeString}`}}
             </div>
@@ -230,7 +231,7 @@ function onRequiresInviteChange(evt: Event) {
                 <div class="row mt-2">
                     <div class="col-12 mt-1" v-for="value in parameter.values" :key="value.value">
                         <div class="input-group">
-                            <Field :editable="true" :value="value.description" label="Description" @change="desc => updateParameterValue(value, 'description', desc)" />
+                            <Field :editable="true" :value="value.description" label="Description" @change="desc => updateParameterDescription(value, desc)" />
                             <Field :value="value.value" label="Value" />
                             <button type="button" class="btn btn-outline-danger" @click="() => deleteParameterValue(parameter.parameterId, value.value)">Delete</button>
                         </div>

@@ -52,16 +52,33 @@ function deleteAvatar() {
     }).then(getAvatars)
 }
 
-function updateAvatarValue(value: any, prop: string, newParamValue: string) {
-    const newValue = {...value}
-    newValue[prop] = newParamValue
+function updateAvatarName(avatar: Avatar, name: string) {
+    const newValue = {...avatar}
+    newValue.name = name
+    updateAvatar(newValue)
+}
 
+function updateAvatarVrcUuid(avatar: Avatar, vrcUuid: string) {
+    const newValue = {...avatar}
+    newValue.vrcUuid = vrcUuid
+    updateAvatar(newValue)
+}
+
+function updateAvatarAllowChange(avatar: Avatar, evt: Event) {
+    if (evt && evt.target && evt.target instanceof HTMLInputElement) {
+      const newValue = {...avatar}
+      newValue.allowChange = evt.target.checked ? 'Y' : 'N'
+      updateAvatar(newValue)
+    }
+}
+
+function updateAvatar(avatar: Avatar) {
     fetchw('/avatar', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(newValue)
+        body: JSON.stringify(avatar)
     }).then(getAvatars)
 }
 
@@ -87,8 +104,15 @@ function onAvatarSelected(avatar: Avatar) {
                 <input class="form-check-input mt-0" type="radio" name="avatarList" @change="evt => onAvatarSelected(avatar)" />
             </div>
 
-            <Field :value="avatar.name" :editable="true" @change="name => updateAvatarValue(avatar, 'name', name)" label="Avatar name" />
-            <Field :value="avatar.vrcUuid" :editable="true" @change="vrcUuid => updateAvatarValue(avatar, 'vrcUuid', vrcUuid)" label="VRC UUID" />
+            <Field :value="avatar.name" :editable="true" @change="name => updateAvatarName(avatar, name)" label="Avatar name" />
+            <Field :value="avatar.vrcUuid" :editable="true" @change="vrcUuid => updateAvatarVrcUuid(avatar, vrcUuid)" label="VRC UUID" />
+            <div class="input-group-text">
+                <div class="form-check">
+                    <input class="form-check-input" :checked="avatar.allowChange == 'Y'" type="checkbox"
+                        :id="`allowChangeCheckbox${avatar.id}`" @change="evt => updateAvatarAllowChange(avatar, evt)" />
+                    <label class="form-check-label" :for="`allowChangeCheckbox${avatar.id}`">Allow changing</label>
+                </div>
+            </div>
 
             <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteAvatar-confirm"
              @click="() => state.deletingAvatar = avatar">Delete</button>

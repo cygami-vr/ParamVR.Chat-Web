@@ -4,4 +4,5 @@ export default interface Avatar {
     vrcUuid: string
     name: string
     image: string
+    allowChange: string
 }
