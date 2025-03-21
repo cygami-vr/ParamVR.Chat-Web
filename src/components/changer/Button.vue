@@ -17,7 +17,7 @@ defineEmits(['click', 'lock', 'release'])
         </div>
         <div v-if="param.lockable == 'Y'" class="col-4 text-end">
             <button type="button" :class="`btn btn-primary-outline material-icons
-             ${param.locked ? (param.lockKey != null ? 'text-primary' : 'text-danger') : 'text-muted'}`" @click="$emit('lock')">
+             ${param.locked ? (param.lockKey ? 'text-primary' : 'text-danger') : 'text-muted'}`" @click="$emit('lock')">
                 {{param.locked ? 'lock' : 'lock_open'}}
             </button>
         </div>

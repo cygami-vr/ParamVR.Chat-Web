@@ -42,6 +42,15 @@ class ParameterLockPayload {
   }
 }
 
+export class AvatarChange extends Change {
+  vrcUuid: string
+
+  constructor(vrcUuid: string) {
+    super()
+    this.vrcUuid = vrcUuid
+  }
+}
+
 export class WebSocketMessage {
   name: string = ''
   type: string = ''

@@ -1,7 +1,7 @@
 <script setup lang='ts'>
 import env from '@/environment'
 import type ParameterObject from '@/model/ParameterObject'
-import { type Change, ParameterChange, ParameterLock, WebSocketMessage } from '@/model/ParameterPayloads'
+import { type Change, ParameterChange, ParameterLock, AvatarChange, WebSocketMessage } from '@/model/ParameterPayloads'
 import Status from '@/Status'
 import { reactive, ref, computed, onUnmounted } from 'vue'
 import Checkbox from '@/components/changer/Checkbox.vue'
@@ -12,7 +12,7 @@ import StatusIcon from '@/components/changer/StatusIcon.vue'
 import AboutButton from '@/components/AboutButton.vue'
 import fetchw from '@/fetchWrapper'
 
-const state = reactive({ wsConnected: false, error: '', targetUser: '', status: new Status() })
+const state = reactive({ wsConnected: false, error: '', targetUser: '', status: new Status(), changeableAvatars: new Map() })
 const parameters = ref(new Array<ParameterObject>())
 const props = defineProps(['targetType', 'target'])
 const updates = new Map<string, Change>()
@@ -31,31 +31,27 @@ const buttonTimeouts = new Map<string, number>()
 console.log(`WebSocket URL = ${url}`)
 let socket: WebSocket
 
-function handleData(data: WebSocketMessage) {
-    if (data.constructor == Array) {
-        parameters.value = data
-        parameters.value.forEach(param => {
-            param.value = param.defaultValue
-        })
-    } else {
-        if (data.type == 'status') {
-            state.status.update(data)
-        } else if (data.type == 'parameter') {
-            parameters.value.forEach(param => {
-                if (param.name == data.name) {
-                    switch (data['parameter-type']) {
-                        case 'value':
-                            param.value = data.value
-                            break
-                        case 'lock':
-                            param.locked = data.locked
-                            param.lockKey = data.lockKey
-                            break
-                    }
-                }
-            })
+function handleParameters(params: Array<ParameterObject>) {
+    parameters.value = params
+    parameters.value.forEach(param => {
+        param.value = param.defaultValue
+    })
+}
+
+function handleSingleParameter(data: WebSocketMessage) {
+    parameters.value.forEach(param => {
+        if (param.name == data.name) {
+            switch (data['parameter-type']) {
+                case 'value':
+                    param.value = data.value
+                    break
+                case 'lock':
+                    param.locked = data.locked
+                    param.lockKey = data.lockKey
+                    break
+            }
         }
-    }
+    })
 }
 
 function createSession() {
@@ -74,9 +70,39 @@ function createSession() {
     }).then(async resp => {
         const session = await resp.json()
         state.targetUser = session.targetUser
+        if (session.changeableAvatars) {
+            state.changeableAvatars = new Map(Object.entries(session.changeableAvatars))
+        }
         document.cookie = `uuid=${session.clientId};max-age=2000000000`
         connect(session.sessionId)
     })
+}
+
+function onSocketMessage(evt: MessageEvent) {
+    console.log(`Message received: ${evt.data}`)
+    const data = JSON.parse(evt.data)
+    const type = typeof data
+    if (type === 'object') {
+        const msg = new WebSocketMessage()
+        Object.assign(msg, data)
+        if (data.status) {
+            msg.status = new Map(Object.entries(data.status))
+        }
+        if (data.parameters) {
+            const parameterList: Array<ParameterObject> = []
+            data.parameters.forEach((elem: ParameterObject) => {
+                parameterList.push(elem)
+            })
+            handleParameters(parameterList)
+        } else if (data.type == 'status') {
+            state.status.update(msg)
+        } else if (data.type == 'parameter') {
+            handleSingleParameter(msg)
+        }
+
+    } else if (data !== 'Connected') {
+        console.warn('data is unexpected type: ' + type)
+    }
 }
 
 function connect(sessionId: string) {
@@ -96,21 +122,7 @@ function connect(sessionId: string) {
         parameters.value = new Array<ParameterObject>()
         connecting = false
     })
-    socket.addEventListener('message', evt => {
-        console.log(`Message received: ${evt.data}`)
-        const data = JSON.parse(evt.data)
-        const type = typeof data
-        if (type === 'object') {
-            const msg = new WebSocketMessage()
-            Object.assign(msg, data)
-            if (data.status) {
-              msg.status = new Map(Object.entries(data.status))
-            }
-            handleData(msg)
-        } else if (data !== 'Connected') {
-            console.warn('data is unexpected type: ' + type)
-        }
-    })
+    socket.addEventListener('message', onSocketMessage)
     socket.addEventListener('error', evt => {
         // Surprisingly, most of the information in the error event seems useless.
         console.log('WebSocket error', evt)
@@ -174,6 +186,11 @@ function lock(name: string, locked: boolean) {
     send(`lock-${name}`, new ParameterLock(name, locked))
 }
 
+function changeAvatar(vrcUuid: string) {
+    console.log(`Scheduling avatar change to ${vrcUuid}`)
+    send(`asdf-${vrcUuid}`, new AvatarChange(vrcUuid))
+}
+
 function reconnect() {
     try {
         socket.close()
@@ -219,6 +236,7 @@ const afkState = statusComputed('afk')
 const activeState = statusComputed('active')
 const isPancakeState = statusComputed('isPancake')
 const isMutedState = statusComputed('muted')
+const avatarVrcUuidState = statusComputed('avatarVrcUuid')
 
 onUnmounted(() => {
     console.log('Component unmounting; closing websocket')
@@ -268,6 +286,18 @@ createSession()
 
                     <StatusIcon name="microphone" icon_on="mic" icon_off="mic_off" :status="isMutedState"
                         on_status="Unmuted" off_status="Muted" invert="true" />
+                </div>
+            </div>
+        </div>
+
+        <div class="row gy-3 justify-content-center mt-1" v-if="state.changeableAvatars.has(avatarVrcUuidState) && state.changeableAvatars.size > 1">
+            <div class="p-3 w-50 text-center border bg-light rounded-3 h5">Switch to another avatar
+                <div class="row align-items-center justify-content-between mt-2">
+                  <div class="col-3 flex-grow-1 py-1" :key="entry[0]" v-for="entry in state.changeableAvatars.entries()">
+                    <button class="btn btn-primary" type="button" @click="() => changeAvatar(entry[0])">
+                        {{entry[1]}}
+                    </button>
+                  </div>
                 </div>
             </div>
         </div>

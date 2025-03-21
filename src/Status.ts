@@ -25,7 +25,7 @@ class Status {
     props: Map<string, StatusProperty> = new Map()
 
     constructor() {
-        [ 'afk', 'active', 'isPancake', 'muted', 'avatar'
+        [ 'afk', 'active', 'isPancake', 'muted', 'avatar', 'avatarVrcUuid'
          ].forEach(s => this.initProp(s))
         this.initProp('image', false)
         this.initProp('connected', false, true, false)
