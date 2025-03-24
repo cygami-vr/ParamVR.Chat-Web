@@ -1,6 +1,8 @@
 <script setup lang='ts'>
 import { ref, watch } from 'vue'
+import { useThemeStore } from '@/stores/themeStore.ts'
 
+const theme = useThemeStore()
 const props = defineProps(['param'])
 const emit = defineEmits(['change', 'lock'])
 const input = ref(null as unknown as HTMLInputElement)
@@ -20,6 +22,29 @@ watch(() => props.param.value, after => {
     input.value.checked = isTrue(after)
 })
 
+function getCheckboxClass() {
+    return theme.colorPrimary ? 'themedCheckbox' : '';
+}
+
+function getClasses() {
+    let classes = ''
+    if (props.param.locked) {
+        if (props.param.lockKey) {
+            classes = 'text-primary'
+            if (theme.colorPrimary) {
+                classes += ' color-theme'
+            }
+        } else {
+            classes = 'text-danger'
+        }
+    } else {
+        classes = 'text-muted'
+    }
+    if (theme.colorPrimary) {
+        classes += ' theme-focus'
+    }
+    return classes
+}
 </script>
 
 <template>
@@ -27,13 +52,13 @@ watch(() => props.param.value, after => {
     <div class="row align-items-center justify-content-between">
         <div class="col-4 flex-grow-1">
             <label class="form-check form-switch" :for="param.name">
-                <input class="form-check-input" :disabled="param.locked" :checked="isTrue(param.value)" type="checkbox" :name="param.name" :id="param.name" @change="onChange" ref="input" />
+                <input :class="`form-check-input ${getCheckboxClass()}`" :disabled="param.locked" :checked="isTrue(param.value)" type="checkbox" :name="param.name" :id="param.name" @change="onChange" ref="input" />
                 <div class="form-check-label h5 text-break" :title="param.description">{{param.description}}</div>
             </label>
         </div>
         <div v-if="param.lockable == 'Y'" class="col-4 text-end">
             <button type="button" :class="`btn btn-primary-outline material-icons
-             ${param.locked ? (param.lockKey ? 'text-primary' : 'text-danger') : 'text-muted'}`" @click="$emit('lock')">
+             ${getClasses()}`" @click="$emit('lock')">
                 {{param.locked ? 'lock' : 'lock_open'}}
             </button>
         </div>
@@ -41,4 +66,13 @@ watch(() => props.param.value, after => {
 </template>
 
 <style>
+.themedCheckbox:checked {
+    background-color: v-bind('theme.colorPrimary') !important;
+    border-color: v-bind('theme.colorPrimary') !important;
+}
+.themedCheckbox:focus {
+    box-shadow: v-bind('theme.boxShadow') !important;
+    border-color: v-bind('theme.lightHslCss') !important;
+    /*background-image: none !important;*/
+}
 </style>

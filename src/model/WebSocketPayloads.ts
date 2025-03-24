@@ -1,3 +1,5 @@
+import type Avatar from '@/model/Avatar'
+
 export class Change {}
 
 export class ParameterChange extends Change {
@@ -51,12 +53,25 @@ export class AvatarChange extends Change {
   }
 }
 
-export class WebSocketMessage {
-  name: string = ''
-  type: string = ''
-  value: string = ''
-  locked: boolean = false
-  lockKey: string = ''
-  'parameter-type': string = ''
-  status: Map<string, string> = new Map()
+export interface Status {
+  avatar: Avatar
+  muted: boolean
+  isPancake: boolean
+  afk: boolean
+  active: boolean
+  vrcOpen: boolean
+  connected: boolean
+  avatarChangeCooldown: number
+  colorPrimary: string
+}
+
+export interface WebSocketMessage {
+  name: string
+  type: string
+  value: string
+  locked: boolean
+  lockKey: string
+  'parameter-type': string
+  status: Status
+  changeableAvatars: Array<Avatar>
 }

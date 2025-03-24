@@ -6,16 +6,24 @@ import AddParameterForm from '@/components/mgmt/AddParameterForm.vue'
 import Parameter from '@/components/mgmt/Parameter.vue'
 import AvatarList from '@/components/mgmt/AvatarList.vue'
 import InviteList from '@/components/mgmt/InviteList.vue'
+import UserSettings from '@/components/mgmt/UserSettings.vue'
 import type ParameterObject from '@/model/ParameterObject'
 import fetchw from '@/fetchWrapper'
 import type Avatar from '@/model/Avatar'
+import { type EligibleForInvite } from '@/model/InviteObject.ts'
 
-const state = reactive({ userName: '', avatar: null as unknown as Avatar })
+const state = reactive({
+    userName: '',
+    avatar: null as unknown as Avatar,
+    avatarChangeCooldown: 0,
+    eligible: null as unknown as EligibleForInvite
+})
 const parameters = ref(new Array<ParameterObject>())
 
 function loggedIn(userName: string) {
     state.userName = userName
     reloadParameters()
+    getEligible()
 }
 
 function reloadParameters() {
@@ -25,6 +33,7 @@ function reloadParameters() {
         const json = await resp.json()
         parameters.value = json
     })
+    getEligible()
 }
 
 function loggedOut() {
@@ -62,6 +71,12 @@ function drop(idA: number, idB: number) {
     }).then(reloadParameters)
 }
 
+function getEligible() {
+    fetchw('/invite/eligible').then(async resp => {
+        state.eligible = await resp.json()
+    })
+}
+
 </script>
 
 <template>
@@ -71,15 +86,19 @@ function drop(idA: number, idB: number) {
             <div class="row mt-1">
                 <div class="p-3 w-100 border bg-light rounded-3">
                     <div class="row">
-                        <AvatarList @avatar-selected="avatar => state.avatar = avatar" />
+                        <AvatarList @avatar-selected="avatar => state.avatar = avatar" @avatar-changed="getEligible" />
                     </div>
                 </div>
             </div>
             <div class="row mt-1">
                 <div class="p-3 w-100 border bg-light rounded-3">
+                    <UserSettings />
+                </div>
+            </div>
+            <div class="row mt-1">
+                <div class="p-3 w-100 border bg-light rounded-3">
                     <div class="row">
-                        <InviteList v-if="state.avatar" :avatarId="state.avatar.vrcUuid" :parameters="parameters" />
-                        <div v-else>Select an avatar to manage invites.</div>
+                        <InviteList v-if="state.eligible" :eligible="state.eligible" />
                     </div>
                 </div>
             </div>

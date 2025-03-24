@@ -1,16 +1,15 @@
 <script setup lang='ts'>
-import { defineProps, reactive, defineEmits } from 'vue'
-import type Invite from '@/model/InviteObject'
+import { reactive } from 'vue'
+import { type InviteObject, type InviteParameter, type InviteAvatarChange } from '@/model/InviteObject'
 import fetchw from '@/fetchWrapper'
-import type ParameterObject from '@/model/ParameterObject'
 
-const props = defineProps(['invite', 'avatarId', 'parameters'])
+const props = defineProps(['invite', 'avatarId', 'parameters', 'eligible'])
 const state = reactive({
-    parameterId: -1
+    parameterId: -1, avatarId: -1
 })
 const emit = defineEmits(['invite-changed'])
 
-function updateInvite(invite: Invite) {
+function updateInvite(invite: InviteObject) {
 
     fetchw('/invite', {
         method: 'POST',
@@ -18,21 +17,22 @@ function updateInvite(invite: Invite) {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(invite)
-    }).then(resp => {
+    }).then(() => {
         emit('invite-changed')
     })
 }
 
-function addParameter(invite: Invite) {
-    invite.parameterIds.push(state.parameterId)
+function addParameter(invite: InviteObject) {
+    invite.parameters.push({parameterId: state.parameterId} as InviteParameter)
     updateInvite(invite)
 }
 
-function getParamName(id: number) {
-    return props.parameters.find((p: ParameterObject) => p.parameterId === id).name
+function addAvatarChange(invite: InviteObject) {
+    invite.changeableAvatars.push({avatarId: state.avatarId} as InviteAvatarChange)
+    updateInvite(invite)
 }
 
-function deleteInvite(invite: Invite) {
+function deleteInvite(invite: InviteObject) {
     fetchw('/invite', {
         method: 'DELETE',
         headers: {
@@ -41,54 +41,62 @@ function deleteInvite(invite: Invite) {
         body: JSON.stringify({
             url: invite.url
         })
-    }).then(resp => {
+    }).then(() => {
         emit('invite-changed')
     })
 }
 
-function copyInviteLink(invite: Invite) {
+function copyInviteLink(invite: InviteObject) {
     window.navigator.clipboard.writeText(`${location.protocol}//${location.host}/nv/${invite.url}`)
 }
 
-function getExpiryDate(invite: Invite) {
+function getExpiryDate(invite: InviteObject) {
     if (invite.expires == -1) {
         return 'Never expires'
     } else {
-        let date = new Date(invite.expires)
-        let formatted = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+        const date = new Date(invite.expires)
+        const formatted = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
         return `Exp. ${formatted}`
     }
 }
 
-function getExpiryDateTime(invite: Invite) {
+function getExpiryDateTime(invite: InviteObject) {
     if (invite.expires == -1) {
         return 'Never expires'
     } else {
-        let date = new Date(invite.expires)
-        let formattedDate = date.toLocaleDateString()
-        let formattedTime = date.toLocaleTimeString()
+        const date = new Date(invite.expires)
+        const formattedDate = date.toLocaleDateString()
+        const formattedTime = date.toLocaleTimeString()
         return `Expires ${formattedDate} ${formattedTime}`
     }
 }
 
-function getEligibleParams(invite: Invite) {
-    return props.parameters.filter(
-        (p: ParameterObject) =>
-     p.requiresInvite == 'Y'
-     && p.avatarVrcUuid == props.avatarId
-     && !invite.parameterIds.includes(p.parameterId)
+function getEligibleParams(invite: InviteObject) {
+    return props.eligible.parameters.filter( (p: InviteParameter) =>
+      !invite.parameters.some(p2 => p.parameterId == p2.parameterId)
     )
 }
 
-function deleteParameter(invite: Invite, paramId: number) {
-    invite.parameterIds.splice(invite.parameterIds.indexOf(paramId))
+function getEligibleAvatarChanges(invite: InviteObject) {
+    return props.eligible.changeableAvatars.filter( (a: InviteAvatarChange) =>
+      !invite.changeableAvatars.some(a2 => a.avatarId == a2.avatarId)
+    )
+}
+
+function deleteParameter(invite: InviteObject, paramId: number) {
+    invite.parameters = invite.parameters.filter(param => param.parameterId != paramId)
+    updateInvite(invite)
+}
+
+function deleteAvatarChange(invite: InviteObject, avaId: number) {
+    invite.changeableAvatars = invite.changeableAvatars.filter(ava => ava.avatarId != avaId)
     updateInvite(invite)
 }
 
 </script>
 
 <template>
-    <div class="col-4 text-center">      
+    <div class="col-4 text-center">
         <div class="p-3 border border-secondary rounded-3">
             <div class="input-group">
                 <button type="button" class="btn btn-outline-primary copy-url-button" @click="() => copyInviteLink(invite)"><span>{{invite.url}}</span></button>
@@ -102,15 +110,32 @@ function deleteParameter(invite: Invite, paramId: number) {
                         <div class="row">
                             <div class="col-5">Select a parameter</div>
                             <div class="col-4"><select class="form-select" v-model="state.parameterId" name="inviteParameterName">
-                                <option v-for="param in getEligibleParams(invite)" :value="param.parameterId">{{ param.name }}</option>
+                                <option :key="`eligibleParam ${invite.id} ${param.parameterId}`" v-for="param in getEligibleParams(invite)"
+                                    :value="param.parameterId">{{ `${param.avatarName} > ${param.parameterName}` }}</option>
                             </select></div>
                             <div class="col-2"><button type="button" class="btn btn-primary" @click="() => addParameter(invite)">Add</button></div>
                         </div>
                         <ul class="mt-2 list-group">
-                            <li v-for="paramId in invite.parameterIds" class="list-group-item">
+                            <li :key="`inviteParam ${invite.id} ${param.parameterId}`" v-for="param in invite.parameters" class="list-group-item">
                                 <div class="input-group">
-                                    <input class="form-control" type="text" readonly :value="getParamName(paramId)" />
-                                    <button type="button" class="btn btn-outline-danger" @click="() => deleteParameter(invite, paramId)">Delete</button>
+                                    <input class="form-control" type="text" readonly :value="`${param.avatarName} > ${param.parameterName}`" />
+                                    <button type="button" class="btn btn-outline-danger" @click="() => deleteParameter(invite, param.parameterId)">Delete</button>
+                                </div>
+                            </li>
+                        </ul>
+                        <div class="mt-2 row">
+                            <div class="col-5">Select an avatar</div>
+                            <div class="col-4"><select class="form-select" v-model="state.avatarId" name="inviteAvatarName">
+                                <option :key="`eligibleAvatar ${invite.id} ${avatar.avatarId}`" v-for="avatar in getEligibleAvatarChanges(invite)"
+                                    :value="avatar.avatarId">{{ avatar.avatarName }}</option>
+                            </select></div>
+                            <div class="col-2"><button type="button" class="btn btn-primary" @click="() => addAvatarChange(invite)">Add</button></div>
+                        </div>
+                        <ul class="mt-2 list-group">
+                            <li :key="`inviteAva ${invite.id} ${ava.avatarId}`" v-for="ava in invite.changeableAvatars" class="list-group-item">
+                                <div class="input-group">
+                                    <input class="form-control" type="text" readonly :value=ava.avatarName />
+                                    <button type="button" class="btn btn-outline-danger" @click="() => deleteAvatarChange(invite, ava.avatarId)">Delete</button>
                                 </div>
                             </li>
                         </ul>

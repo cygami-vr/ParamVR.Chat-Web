@@ -1,10 +1,10 @@
 <script setup lang='ts'>
 import { reactive, ref } from 'vue'
-import type InviteObject from '@/model/InviteObject'
+import { type InviteObject } from '@/model/InviteObject'
 import Invite from '@/components/mgmt/Invite.vue'
 import fetchw from '@/fetchWrapper'
 
-defineProps(['avatarId', 'parameters'])
+const props = defineProps(['eligible'])
 const state = reactive({
     neverExpires: false, expiryDateTime: ''
 })
@@ -33,7 +33,6 @@ function createInvite() {
             return
         }
         expires = new Date(state.expiryDateTime).getTime()
-
     }
 
     fetchw('/invite', {
@@ -41,9 +40,7 @@ function createInvite() {
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-            expires
-        })
+        body: JSON.stringify({ expires })
     }).then(() => {
         getInvites()
     })
@@ -63,8 +60,7 @@ function createInvite() {
         <div v-if="!state.neverExpires" class="col-2"><input class="form-control" v-model="state.expiryDateTime" name="expiryDateTime" type="datetime-local" /></div>
         <div class="col-2"><button type="button" class="btn btn-primary" @click="createInvite">Create Invite</button></div>
         <div class="row gy-3 justify-content-center mt-1">
-            <Invite class="col-4 text-center" v-for="invite in invites" :key="invite.url"
-                @invite-changed="getInvites" :invite="invite" :avatarId="avatarId" :parameters="parameters" />
+            <Invite class="col-4 text-center" v-for="invite in invites" :key="invite.url" @invite-changed="getInvites" :invite="invite" :eligible="props.eligible" />
         </div>
     </div>
 </template>

@@ -11,7 +11,7 @@ const state = reactive({
     deletingAvatar: null as unknown as Avatar
 })
 const avatars = ref(new Array<Avatar>())
-const emit = defineEmits(['avatar-selected'])
+const emit = defineEmits(['avatar-selected', 'avatar-changed'])
 
 function getAvatars() {
     fetchw('/avatar', {
@@ -24,6 +24,7 @@ function getAvatars() {
                 return avatar.id == state.activeAvatar.id
             })
         }
+        emit('avatar-changed')
     })
 }
 getAvatars()
@@ -72,6 +73,14 @@ function updateAvatarAllowChange(avatar: Avatar, evt: Event) {
     }
 }
 
+function updateAvatarChangeRequiresInvite(avatar: Avatar, evt: Event) {
+    if (evt && evt.target && evt.target instanceof HTMLInputElement) {
+      const newValue = {...avatar}
+      newValue.changeRequiresInvite = evt.target.checked ? 'Y' : 'N'
+      updateAvatar(newValue)
+    }
+}
+
 function updateAvatar(avatar: Avatar) {
     fetchw('/avatar', {
         method: 'POST',
@@ -97,7 +106,7 @@ function onAvatarSelected(avatar: Avatar) {
             <div class="col-5"><input name="vrcUuid" type="text" v-model="state.vrcUuid" placeholder="VRC UUID" class="form-control" /></div>
             <div class="col-2"><button type="button" class="btn btn-primary" @click="addAvatar">Add Avatar</button></div>
         </div>
-        <div class="h5">Avatars</div>
+        <div class="h5 mt-1">Avatars</div>
         <div v-if="avatars.length == 0">You have no avatars. Create one to get started.</div>
         <div class="input-group mb-2" v-for="avatar in avatars" :key="avatar.id">
             <div class="input-group-text">
@@ -111,6 +120,13 @@ function onAvatarSelected(avatar: Avatar) {
                     <input class="form-check-input" :checked="avatar.allowChange == 'Y'" type="checkbox"
                         :id="`allowChangeCheckbox${avatar.id}`" @change="evt => updateAvatarAllowChange(avatar, evt)" />
                     <label class="form-check-label" :for="`allowChangeCheckbox${avatar.id}`">Allow changing</label>
+                </div>
+            </div>
+            <div class="input-group-text">
+                <div class="form-check">
+                    <input class="form-check-input" :checked="avatar.changeRequiresInvite == 'Y'" type="checkbox" :disabled="avatar.allowChange == 'N'"
+                        :id="`changeRequiresInviteCheckbox${avatar.id}`" @change="evt => updateAvatarChangeRequiresInvite(avatar, evt)" />
+                    <label class="form-check-label" :for="`changeRequiresInviteCheckbox${avatar.id}`">Change requires invite</label>
                 </div>
             </div>
 

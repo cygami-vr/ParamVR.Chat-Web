@@ -3,6 +3,9 @@ import Error from '@/components/Error.vue'
 import VrcParamMgmtDashboard from '@/components/mgmt/VrcParamMgmtDashboard.vue'
 import VrcParamChanger from '@/components/changer/VrcParamChanger.vue'
 import AboutModal from '@/components/AboutModal.vue'
+import { useThemeStore } from '@/stores/themeStore.ts'
+
+const theme = useThemeStore()
 
 let targetType: string
 let target: string
@@ -23,14 +26,32 @@ console.log(`Target: ${target}`)
 </script>
 
 <template>
-    <Error />
-    <AboutModal />
-    <VrcParamChanger v-if='target' :target='target' :targetType='targetType' />
-    <VrcParamMgmtDashboard v-else />
+    <div id="bg" :class="`bg-primary bg-gradient ${theme.colorPrimary ? 'bg-primary-theme' : ''}`">
+        <Error />
+        <AboutModal />
+        <VrcParamChanger v-if='target' :target='target' :targetType='targetType' />
+        <VrcParamMgmtDashboard v-else />
+    </div>
 </template>
 
 <style>
-html, body, #app {
+html, body, #app, #bg {
     min-height: 100vh;
+}
+
+.bg-primary-theme {
+    background-color: v-bind('theme.colorPrimary') !important;
+}
+
+.border-primary-theme {
+    border-color: v-bind('theme.colorPrimary') !important;
+}
+
+.color-theme {
+    color: v-bind('theme.colorPrimary') !important;
+}
+
+.theme-focus:focus {
+    box-shadow: v-bind('theme.boxShadow') !important;
 }
 </style>

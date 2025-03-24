@@ -1,8 +1,7 @@
 <script setup lang='ts'>
 import env from '@/environment'
 import type ParameterObject from '@/model/ParameterObject'
-import { type Change, ParameterChange, ParameterLock, AvatarChange, WebSocketMessage } from '@/model/ParameterPayloads'
-import Status from '@/Status'
+import { type Change, ParameterChange, ParameterLock, type WebSocketMessage, type Status } from '@/model/WebSocketPayloads'
 import { reactive, ref, computed, onUnmounted } from 'vue'
 import Checkbox from '@/components/changer/Checkbox.vue'
 import Slider from '@/components/changer/Slider.vue'
@@ -10,13 +9,20 @@ import LOV from '@/components/changer/LOV.vue'
 import Button from '@/components/changer/Button.vue'
 import StatusIcon from '@/components/changer/StatusIcon.vue'
 import AboutButton from '@/components/AboutButton.vue'
+import AvatarChanger from '@/components/changer/AvatarChanger.vue'
 import fetchw from '@/fetchWrapper'
+import type Avatar from '@/model/Avatar'
+import { useThemeStore } from '@/stores/themeStore.ts'
 
-const state = reactive({ wsConnected: false, error: '', targetUser: '', status: new Status(), changeableAvatars: new Map() })
+const theme = useThemeStore()
+
+const state = reactive({ wsConnected: false, error: '', targetUser: '',
+    status: {} as Status, changeableAvatars: [] as Array<Avatar>, changeAvatarCooldownActive: true })
 const parameters = ref(new Array<ParameterObject>())
 const props = defineProps(['targetType', 'target'])
 const updates = new Map<string, Change>()
 let connecting = false
+let avatarChangeCooldownTimeout = -1
 
 let url: string
 if (env.isProduction) {
@@ -54,6 +60,38 @@ function handleSingleParameter(data: WebSocketMessage) {
     })
 }
 
+function handleStatus(status: Status) {
+    if ((status.vrcOpen !== undefined || status.connected !== undefined)
+        && (status.vrcOpen !== state.status?.vrcOpen || status.connected !== state.status?.connected)) {
+
+          resetStatus()
+    }
+    Object.assign(state.status, status)
+    if (status.avatarChangeCooldown !== undefined) {
+        if (status.avatarChangeCooldown > 0) {
+
+            state.changeAvatarCooldownActive = true
+
+            if (avatarChangeCooldownTimeout != -1) {
+                clearTimeout(avatarChangeCooldownTimeout)
+                avatarChangeCooldownTimeout = -1
+            }
+
+            avatarChangeCooldownTimeout = setTimeout(() => {
+
+                state.changeAvatarCooldownActive = false
+
+            }, status.avatarChangeCooldown)
+
+        } else {
+            state.changeAvatarCooldownActive = false
+        }
+    }
+    if (status.colorPrimary) {
+        theme.setColorPrimary(status.colorPrimary)
+    }
+}
+
 function createSession() {
     connecting = true
     const clientId = document.cookie.split('; ').find(row => row.startsWith('uuid='))?.substring(5)
@@ -70,9 +108,6 @@ function createSession() {
     }).then(async resp => {
         const session = await resp.json()
         state.targetUser = session.targetUser
-        if (session.changeableAvatars) {
-            state.changeableAvatars = new Map(Object.entries(session.changeableAvatars))
-        }
         document.cookie = `uuid=${session.clientId};max-age=2000000000`
         connect(session.sessionId)
     })
@@ -83,26 +118,29 @@ function onSocketMessage(evt: MessageEvent) {
     const data = JSON.parse(evt.data)
     const type = typeof data
     if (type === 'object') {
-        const msg = new WebSocketMessage()
-        Object.assign(msg, data)
-        if (data.status) {
-            msg.status = new Map(Object.entries(data.status))
-        }
         if (data.parameters) {
-            const parameterList: Array<ParameterObject> = []
-            data.parameters.forEach((elem: ParameterObject) => {
-                parameterList.push(elem)
-            })
-            handleParameters(parameterList)
-        } else if (data.type == 'status') {
-            state.status.update(msg)
+            handleParameters(data.parameters)
+        } else if (data.status) {
+            handleStatus(data.status)
         } else if (data.type == 'parameter') {
-            handleSingleParameter(msg)
+            handleSingleParameter(data)
+        } else if (data.changeableAvatars) {
+            state.changeableAvatars = data.changeableAvatars
+        } else {
+            console.warn('unrecognized data structure in websocket message')
         }
-
     } else if (data !== 'Connected') {
         console.warn('data is unexpected type: ' + type)
     }
+}
+
+function resetStatus() {
+    state.status = {
+        connected: state.status?.connected,
+        vrcOpen: state.status?.vrcOpen,
+        avatar: { image: state.status?.avatar?.image },
+        colorPrimary: state.status?.colorPrimary
+    } as Status
 }
 
 function connect(sessionId: string) {
@@ -118,7 +156,7 @@ function connect(sessionId: string) {
         console.log('WebSocket closed')
         state.wsConnected = false
         state.error = 'Server connection lost; you can refresh the page or we will try to reconnect automatically soon'
-        state.status.resetAll()
+        resetStatus()
         parameters.value = new Array<ParameterObject>()
         connecting = false
     })
@@ -186,11 +224,6 @@ function lock(name: string, locked: boolean) {
     send(`lock-${name}`, new ParameterLock(name, locked))
 }
 
-function changeAvatar(vrcUuid: string) {
-    console.log(`Scheduling avatar change to ${vrcUuid}`)
-    send(`asdf-${vrcUuid}`, new AvatarChange(vrcUuid))
-}
-
 function reconnect() {
     try {
         socket.close()
@@ -218,25 +251,11 @@ const pingInterval = setInterval(() => {
 }, 60000)
 
 const connectionState = computed(() => {
-    const connected = state.status.getProp('connected')
-    const vrcOpen = state.status.getProp('vrcOpen')
+    const connected = state.status?.connected
+    const vrcOpen = state.status?.vrcOpen
     console.log(`Determining connection state. WS=${state.wsConnected}, Connected=${connected}, VRC=${vrcOpen}`)
     return state.wsConnected && connected && vrcOpen ? true : false
 })
-
-function statusComputed(prop: string) {
-    return computed(() => {
-        const val = state.status.getProp(prop) as string
-        console.log(`Computing value of ${prop} = ${val}`)
-        return val
-    })
-}
-const imageState = statusComputed('image')
-const afkState = statusComputed('afk')
-const activeState = statusComputed('active')
-const isPancakeState = statusComputed('isPancake')
-const isMutedState = statusComputed('muted')
-const avatarVrcUuidState = statusComputed('avatarVrcUuid')
 
 onUnmounted(() => {
     console.log('Component unmounting; closing websocket')
@@ -248,6 +267,8 @@ onUnmounted(() => {
     buttonTimeouts.forEach(timeout => {
         clearTimeout(timeout)
     })
+    if (avatarChangeCooldownTimeout != -1)
+        clearTimeout(avatarChangeCooldownTimeout)
 })
 
 createSession()
@@ -263,8 +284,8 @@ createSession()
             <div class="p-3 w-75 rounded-3 alert alert-danger">{{ state.error }}</div>
         </div>
         <div class="row justify-content-center mt-1">
-            <div v-if="imageState" class="row justify-content-center mb-2">
-                <div class="col-6 text-center"><img class="img-thumbnail" :src="imageState" /></div>
+            <div v-if="state.status?.avatar?.image" class="row justify-content-center mb-2">
+                <div class="col-6 text-center"><img id="avatarImage" class="img-thumbnail" :src="state.status?.avatar?.image" /></div>
             </div>
             <div class="p-3 w-50 text-center border bg-light rounded-3 h4">{{ state.targetUser }}'s avatar parameters</div>
         </div>
@@ -275,32 +296,24 @@ createSession()
                     <StatusIcon name="connection" icon_on="wifi" icon_off="wifi_off" :status="connectionState"
                         on_status="Live connection" off_status="No connection" />
 
-                    <StatusIcon name="AFK" icon_on="location_on" icon_off="location_off" :status="afkState"
+                    <StatusIcon name="AFK" icon_on="location_on" icon_off="location_off" :status="state.status?.afk"
                         on_status="Not AFK" off_status="AFK" invert="true" />
 
-                    <StatusIcon name="activity" icon_on="directions_run" icon_off="bedtime" :status="activeState"
+                    <StatusIcon name="activity" icon_on="directions_run" icon_off="bedtime" :status="state.status?.active"
                         on_status="Active" off_status="Inactive" />
 
-                    <StatusIcon name="desktop" icon_on="desktop_windows" icon_off="desktop_access_disabled" :status="isPancakeState"
+                    <StatusIcon name="desktop" icon_on="desktop_windows" icon_off="desktop_access_disabled" :status="state.status?.isPancake"
                         on_status="On desktop" off_status="In VR" />
 
-                    <StatusIcon name="microphone" icon_on="mic" icon_off="mic_off" :status="isMutedState"
+                    <StatusIcon name="microphone" icon_on="mic" icon_off="mic_off" :status="state.status?.muted"
                         on_status="Unmuted" off_status="Muted" invert="true" />
                 </div>
             </div>
         </div>
 
-        <div class="row gy-3 justify-content-center mt-1" v-if="state.changeableAvatars.has(avatarVrcUuidState) && state.changeableAvatars.size > 1">
-            <div class="p-3 w-50 text-center border bg-light rounded-3 h5">Switch to another avatar
-                <div class="row align-items-center justify-content-between mt-2">
-                  <div class="col-3 flex-grow-1 py-1" :key="entry[0]" v-for="entry in state.changeableAvatars.entries()">
-                    <button class="btn btn-primary" type="button" @click="() => changeAvatar(entry[0])">
-                        {{entry[1]}}
-                    </button>
-                  </div>
-                </div>
-            </div>
-        </div>
+        <AvatarChanger :changeable-avatars="state.changeableAvatars"
+            :changeAvatarCooldownActive="state.changeAvatarCooldownActive"
+            @avatar-change="chg => send('avatar', chg)" />
 
         <div class="row gy-3 justify-content-center mt-1">
             <div class="col-6 text-center" v-if="parameters.length == 0">
@@ -333,4 +346,17 @@ createSession()
 </template>
 
 <style>
+
+#avatarImage {
+  max-width: 256px;
+  max-height: 256px;
+}
+
+.changeAvatarThumbnail {
+  max-width: 128px;
+  max-height: 128px;
+  width: auto;
+  height: auto;
+}
+
 </style>

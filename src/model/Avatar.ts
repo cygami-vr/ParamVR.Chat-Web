@@ -5,4 +5,5 @@ export default interface Avatar {
     name: string
     image: string
     allowChange: string
+    changeRequiresInvite: string
 }
