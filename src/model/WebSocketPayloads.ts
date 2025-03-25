@@ -12,7 +12,6 @@ export class ParameterChange extends Change {
 }
 
 class ParameterChangePayload {
-
   name: string
   value: string
   dataType: number
@@ -34,7 +33,6 @@ export class ParameterLock extends Change {
 }
 
 class ParameterLockPayload {
-
   name: string
   locked: boolean
 

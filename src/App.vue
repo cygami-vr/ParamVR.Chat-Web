@@ -1,4 +1,4 @@
-<script setup lang='ts'>
+<script setup lang="ts">
 import Error from '@/components/Error.vue'
 import VrcParamMgmtDashboard from '@/components/mgmt/VrcParamMgmtDashboard.vue'
 import VrcParamChanger from '@/components/changer/VrcParamChanger.vue'
@@ -11,47 +11,49 @@ let targetType: string
 let target: string
 
 if (location.pathname.startsWith('/nv')) {
-    target = location.pathname.substring(4)
-    targetType = 'invite'
+  target = location.pathname.substring(4)
+  targetType = 'invite'
 } else if (location.pathname.startsWith('/p')) {
-    target = location.pathname.substring(3).toLowerCase()
-    targetType = 'user'
+  target = location.pathname.substring(3).toLowerCase()
+  targetType = 'user'
 } else {
-    target = ''
-    targetType = ''
+  target = ''
+  targetType = ''
 }
 console.log(`Target type: ${targetType}`)
 console.log(`Target: ${target}`)
-
 </script>
 
 <template>
-    <div id="bg" :class="`bg-primary bg-gradient ${theme.colorPrimary ? 'bg-primary-theme' : ''}`">
-        <Error />
-        <AboutModal />
-        <VrcParamChanger v-if='target' :target='target' :targetType='targetType' />
-        <VrcParamMgmtDashboard v-else />
-    </div>
+  <div id="bg" :class="`bg-primary bg-gradient ${theme.colorPrimary ? 'bg-primary-theme' : ''}`">
+    <Error />
+    <AboutModal />
+    <VrcParamChanger v-if="target" :target="target" :targetType="targetType" />
+    <VrcParamMgmtDashboard v-else />
+  </div>
 </template>
 
 <style>
-html, body, #app, #bg {
-    min-height: 100vh;
+html,
+body,
+#app,
+#bg {
+  min-height: 100vh;
 }
 
 .bg-primary-theme {
-    background-color: v-bind('theme.colorPrimary') !important;
+  background-color: v-bind('theme.colorPrimary') !important;
 }
 
 .border-primary-theme {
-    border-color: v-bind('theme.colorPrimary') !important;
+  border-color: v-bind('theme.colorPrimary') !important;
 }
 
 .color-theme {
-    color: v-bind('theme.colorPrimary') !important;
+  color: v-bind('theme.colorPrimary') !important;
 }
 
 .theme-focus:focus {
-    box-shadow: v-bind('theme.boxShadow') !important;
+  box-shadow: v-bind('theme.boxShadow') !important;
 }
 </style>

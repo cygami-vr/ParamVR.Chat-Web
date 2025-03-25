@@ -1,4 +1,4 @@
-<script setup lang='ts'>
+<script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useThemeStore } from '@/stores/themeStore.ts'
 
@@ -8,71 +8,91 @@ const emit = defineEmits(['change', 'lock'])
 const input = ref(null as unknown as HTMLInputElement)
 
 function onChange(evt: Event) {
-    if (evt && evt.target && evt.target instanceof HTMLInputElement) {
-        emit('change', props.param.name, evt.target.checked)
-    }
+  if (evt && evt.target && evt.target instanceof HTMLInputElement) {
+    emit('change', props.param.name, evt.target.checked)
+  }
 }
 
 function isTrue(val: boolean | string) {
-    return val === true || val === 'true'
+  return val === true || val === 'true'
 }
 
 // The "checked" attribute can only control the initial value, so we need to update it this way.
-watch(() => props.param.value, after => {
+watch(
+  () => props.param.value,
+  (after) => {
     input.value.checked = isTrue(after)
-})
+  },
+)
 
 function getCheckboxClass() {
-    return theme.colorPrimary ? 'themedCheckbox' : '';
+  return theme.colorPrimary ? 'themedCheckbox' : ''
 }
 
 function getClasses() {
-    let classes = ''
-    if (props.param.locked) {
-        if (props.param.lockKey) {
-            classes = 'text-primary'
-            if (theme.colorPrimary) {
-                classes += ' color-theme'
-            }
-        } else {
-            classes = 'text-danger'
-        }
+  let classes = ''
+  if (props.param.locked) {
+    if (props.param.lockKey) {
+      classes = 'text-primary'
+      if (theme.colorPrimary) {
+        classes += ' color-theme'
+      }
     } else {
-        classes = 'text-muted'
+      classes = 'text-danger'
     }
-    if (theme.colorPrimary) {
-        classes += ' theme-focus'
-    }
-    return classes
+  } else {
+    classes = 'text-muted'
+  }
+  if (theme.colorPrimary) {
+    classes += ' theme-focus'
+  }
+  return classes
 }
 </script>
 
 <template>
-    <div class="text-center mb-2" v-if="param.image"><img :src="param.image" class="rounded-3" /></div>
-    <div class="row align-items-center justify-content-between">
-        <div class="col-4 flex-grow-1">
-            <label class="form-check form-switch" :for="param.name">
-                <input :class="`form-check-input ${getCheckboxClass()}`" :disabled="param.locked" :checked="isTrue(param.value)" type="checkbox" :name="param.name" :id="param.name" @change="onChange" ref="input" />
-                <div class="form-check-label h5 text-break" :title="param.description">{{param.description}}</div>
-            </label>
+  <div class="text-center mb-2" v-if="param.image">
+    <img :src="param.image" class="rounded-3" />
+  </div>
+  <div class="row align-items-center justify-content-between">
+    <div class="col-4 flex-grow-1">
+      <label class="form-check form-switch" :for="param.name">
+        <input
+          :class="`form-check-input ${getCheckboxClass()}`"
+          :disabled="param.locked"
+          :checked="isTrue(param.value)"
+          type="checkbox"
+          :name="param.name"
+          :id="param.name"
+          @change="onChange"
+          ref="input"
+        />
+        <div class="form-check-label h5 text-break" :title="param.description">
+          {{ param.description }}
         </div>
-        <div v-if="param.lockable == 'Y'" class="col-4 text-end">
-            <button type="button" :class="`btn btn-primary-outline material-icons
-             ${getClasses()}`" @click="$emit('lock')">
-                {{param.locked ? 'lock' : 'lock_open'}}
-            </button>
-        </div>
+      </label>
     </div>
+    <div v-if="param.lockable == 'Y'" class="col-4 text-end">
+      <button
+        type="button"
+        :class="`btn btn-primary-outline material-icons
+             ${getClasses()}`"
+        @click="$emit('lock')"
+      >
+        {{ param.locked ? 'lock' : 'lock_open' }}
+      </button>
+    </div>
+  </div>
 </template>
 
 <style>
 .themedCheckbox:checked {
-    background-color: v-bind('theme.colorPrimary') !important;
-    border-color: v-bind('theme.colorPrimary') !important;
+  background-color: v-bind('theme.colorPrimary') !important;
+  border-color: v-bind('theme.colorPrimary') !important;
 }
 .themedCheckbox:focus {
-    box-shadow: v-bind('theme.boxShadow') !important;
-    border-color: v-bind('theme.lightHslCss') !important;
-    /*background-image: none !important;*/
+  box-shadow: v-bind('theme.boxShadow') !important;
+  border-color: v-bind('theme.lightHslCss') !important;
+  /*background-image: none !important;*/
 }
 </style>

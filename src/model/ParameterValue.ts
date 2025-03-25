@@ -1,5 +1,4 @@
 export default interface ParameterValue {
-
-    description: string
-    value: string
+  description: string
+  value: string
 }
