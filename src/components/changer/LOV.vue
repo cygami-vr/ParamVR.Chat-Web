@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { useThemeStore } from '@/stores/themeStore.ts'
 import LockButton from '@/components/changer/LockButton.vue'
+import ThemedRadioButton from '@/components/theme/ThemedRadioButton.vue'
 
-const theme = useThemeStore()
 const props = defineProps(['param'])
 const emit = defineEmits(['change', 'lock'])
 
@@ -10,10 +9,6 @@ function onChange(evt: Event) {
   if (evt && evt.target && evt.target instanceof HTMLInputElement) {
     emit('change', props.param.name, evt.target.value)
   }
-}
-
-function getRadioClass() {
-  return theme.colorPrimary ? 'themedLov' : ''
 }
 </script>
 
@@ -31,10 +26,8 @@ function getRadioClass() {
       <div class="form-check text-start">
         <label :for="param.name + value.value" class="row justify-content-center">
           <div class="col-1">
-            <input
-              :class="`form-check-input ${getRadioClass()}`"
+            <ThemedRadioButton
               :disabled="param.locked"
-              type="radio"
               :id="param.name + value.value"
               :name="param.name"
               @change="onChange"
