@@ -1,22 +1,11 @@
 <script setup lang="ts">
-import { useThemeStore } from '@/stores/themeStore.ts'
-
-const theme = useThemeStore()
-
-function getThemeClass() {
-  return theme.colorPrimary ? 'bg-primary-theme theme-focus border-primary-theme' : ''
-}
+import ThemedButton from '@/components/theme/ThemedButton.vue'
 </script>
 
 <template>
-  <button
-    :class="`btn btn-info ${getThemeClass()}`"
-    type="button"
-    data-bs-toggle="modal"
-    data-bs-target="#about"
+  <ThemedButton defaultClass="btn-info" data-bs-toggle="modal" data-bs-target="#about"
+    >About</ThemedButton
   >
-    About
-  </button>
 </template>
 
 <style></style>

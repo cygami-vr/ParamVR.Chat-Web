@@ -6,7 +6,6 @@ import AboutModal from '@/components/AboutModal.vue'
 import { useThemeStore } from '@/stores/themeStore.ts'
 
 const theme = useThemeStore()
-
 let targetType: string
 let target: string
 
@@ -22,10 +21,18 @@ if (location.pathname.startsWith('/nv')) {
 }
 console.log(`Target type: ${targetType}`)
 console.log(`Target: ${target}`)
+
+function getBgClasses() {
+  let classes = 'bg-primary bg-gradient'
+  if (theme.colorPrimary) {
+    classes += ' bg-primary-theme'
+  }
+  return classes
+}
 </script>
 
 <template>
-  <div id="bg" :class="`bg-primary bg-gradient ${theme.colorPrimary ? 'bg-primary-theme' : ''}`">
+  <div id="bg" :class="getBgClasses()">
     <Error />
     <AboutModal />
     <VrcParamChanger v-if="target" :target="target" :targetType="targetType" />

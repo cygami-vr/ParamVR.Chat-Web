@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { reactive } from 'vue'
+import ThemedButton from '@/components/theme/ThemedButton.vue'
 import fetchw from '@/fetchWrapper'
 
 const props = defineProps(['avatarId'])
@@ -101,7 +102,7 @@ function onTypeChange() {
       </select>
     </div>
     <div class="col-2">
-      <button type="button" class="btn btn-primary" @click="addParameter">Add Parameter</button>
+      <ThemedButton @click="addParameter">Add Parameter</ThemedButton>
     </div>
   </div>
 </template>

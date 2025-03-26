@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { reactive } from 'vue'
+import ThemedButton from '@/components/theme/ThemedButton.vue'
 import fetchw from '@/fetchWrapper'
 
 const state = reactive({ file: null as unknown as File })
@@ -48,7 +49,7 @@ function onFileChange(evt: Event) {
 
 <template>
   <input class="form-control" accept="image/*" type="file" @change="onFileChange" />
-  <button type="button" class="btn btn-primary" @click="uploadImage">Upload</button>
+  <ThemedButton @click="uploadImage">Upload</ThemedButton>
   <button type="button" class="btn btn-outline-danger" @click="deleteImage">Delete</button>
 </template>
 

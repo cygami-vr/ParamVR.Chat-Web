@@ -2,6 +2,8 @@
 import { reactive, computed } from 'vue'
 import Field from '@/components/mgmt/Field.vue'
 import ImageInput from '@/components/mgmt/ImageInput.vue'
+import ThemedButton from '@/components/theme/ThemedButton.vue'
+import ThemedCheckbox from '@/components/theme/ThemedCheckbox.vue'
 import type ParameterObject from '@/model/ParameterObject'
 import fetchw from '@/fetchWrapper'
 
@@ -251,36 +253,30 @@ function onRequiresInviteChange(evt: Event) {
       </template>
       <div class="row align-items-center ms-1 mt-2">
         <div class="col-3 form-check">
-          <input
-            class="form-check-input"
+          <ThemedCheckbox
             :checked="parameter.saved == 'Y'"
-            type="checkbox"
             :id="`savedCheckbox${parameter.parameterId}`"
-            @change="(evt) => onSavedChange(evt)"
+            @change="(evt: Event) => onSavedChange(evt)"
           />
           <label class="form-check-label" :for="`savedCheckbox${parameter.parameterId}`"
             >Is saved</label
           >
         </div>
         <div class="col-3 form-check">
-          <input
-            class="form-check-input"
+          <ThemedCheckbox
             :checked="parameter.lockable == 'Y'"
-            type="checkbox"
             :id="`lockableCheckbox${parameter.parameterId}`"
-            @change="(evt) => onLockableChange(evt)"
+            @change="(evt: Event) => onLockableChange(evt)"
           />
           <label class="form-check-label" :for="`lockableCheckbox${parameter.parameterId}`"
             >Is lockable</label
           >
         </div>
         <div class="col-3 form-check">
-          <input
-            class="form-check-input"
+          <ThemedCheckbox
             :checked="parameter.requiresInvite == 'Y'"
-            type="checkbox"
             :id="`requiresInviteCheckbox${parameter.parameterId}`"
-            @change="(evt) => onRequiresInviteChange(evt)"
+            @change="(evt: Event) => onRequiresInviteChange(evt)"
           />
           <label class="form-check-label" :for="`requiresInviteCheckbox${parameter.parameterId}`"
             >Requires invite</label
@@ -299,13 +295,7 @@ function onRequiresInviteChange(evt: Event) {
               v-on:keyup.enter="() => addValue(parameter.parameterId)"
               placeholder="parameter value"
             />
-            <button
-              type="button"
-              class="btn btn-primary"
-              @click="() => addValue(parameter.parameterId)"
-            >
-              Add Value
-            </button>
+            <ThemedButton @click="() => addValue(parameter.parameterId)"> Add Value </ThemedButton>
           </div>
         </div>
         <div class="row mt-2">
@@ -350,14 +340,13 @@ function onRequiresInviteChange(evt: Event) {
       </div>
       <div class="row mt-3">
         <div class="col-6 text-start">
-          <button
-            class="btn btn-outline-primary"
-            type="button"
+          <ThemedButton
+            defaultClass="btn-outline-primary"
             data-bs-toggle="collapse"
             :data-bs-target="`#parameterImage${parameter.parameterId}`"
           >
             Parameter image...
-          </button>
+          </ThemedButton>
         </div>
         <div class="col-6 text-end">
           <button

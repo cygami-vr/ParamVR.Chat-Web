@@ -1,33 +1,9 @@
 <script setup lang="ts">
-import { useThemeStore } from '@/stores/themeStore.ts'
+import LockButton from '@/components/changer/LockButton.vue'
+import ThemedButton from '@/components/theme/ThemedButton.vue'
 
-const theme = useThemeStore()
-const props = defineProps(['param'])
+defineProps(['param'])
 defineEmits(['click', 'lock', 'release'])
-
-function getButtonClass() {
-  return theme.colorPrimary ? 'themedButton' : ''
-}
-
-function getClasses() {
-  let classes = ''
-  if (props.param.locked) {
-    if (props.param.lockKey) {
-      classes = 'text-primary'
-      if (theme.colorPrimary) {
-        classes += ' color-theme'
-      }
-    } else {
-      classes = 'text-danger'
-    }
-  } else {
-    classes = 'text-muted'
-  }
-  if (theme.colorPrimary) {
-    classes += ' theme-focus'
-  }
-  return classes
-}
 </script>
 
 <template>
@@ -36,35 +12,16 @@ function getClasses() {
   </div>
   <div class="row align-items-center justify-content-between">
     <div class="col-4 flex-grow-1">
-      <button
-        :class="`btn btn-primary ${getButtonClass()}`"
+      <ThemedButton
         :disabled="param.locked"
-        type="button"
         @mousedown="() => $emit('click', param.name)"
         @click="() => $emit('release', param.name)"
       >
         {{ param.description }}
-      </button>
+      </ThemedButton>
     </div>
-    <div v-if="param.lockable == 'Y'" class="col-4 text-end">
-      <button
-        type="button"
-        :class="`btn btn-primary-outline material-icons
-             ${getClasses()}`"
-        @click="$emit('lock')"
-      >
-        {{ param.locked ? 'lock' : 'lock_open' }}
-      </button>
-    </div>
+    <LockButton :param="param" @lock="$emit('lock')" />
   </div>
 </template>
 
-<style>
-.themedButton {
-  background-color: v-bind('theme.colorPrimary') !important;
-  border-color: v-bind('theme.colorPrimary') !important;
-}
-.themedButton:focus {
-  box-shadow: v-bind('theme.boxShadow') !important;
-}
-</style>
+<style></style>

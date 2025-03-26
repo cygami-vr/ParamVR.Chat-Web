@@ -2,6 +2,8 @@
 import { reactive, ref } from 'vue'
 import { type InviteObject } from '@/model/InviteObject'
 import Invite from '@/components/mgmt/Invite.vue'
+import ThemedButton from '@/components/theme/ThemedButton.vue'
+import ThemedCheckbox from '@/components/theme/ThemedCheckbox.vue'
 import fetchw from '@/fetchWrapper'
 
 const props = defineProps(['eligible'])
@@ -40,9 +42,7 @@ function createInvite() {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ expires }),
-  }).then(() => {
-    getInvites()
-  })
+  }).then(getInvites)
 }
 </script>
 
@@ -51,13 +51,11 @@ function createInvite() {
   <div class="row align-items-center">
     <div class="col-2">
       <div class="form-check">
-        <input
-          class="form-check-input"
+        <ThemedCheckbox
           :checked="false"
           id="neverExpires"
           v-model="state.neverExpires"
           name="neverExpires"
-          type="checkbox"
         />
         <label class="form-check-label" for="neverExpires">Never Expires</label>
       </div>
@@ -71,7 +69,7 @@ function createInvite() {
       />
     </div>
     <div class="col-2">
-      <button type="button" class="btn btn-primary" @click="createInvite">Create Invite</button>
+      <ThemedButton @click="createInvite">Create Invite</ThemedButton>
     </div>
     <div class="row gy-3 justify-content-center mt-1">
       <Invite

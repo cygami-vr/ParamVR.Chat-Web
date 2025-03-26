@@ -2,6 +2,9 @@
 import { reactive } from 'vue'
 import Field from '@/components/mgmt/Field.vue'
 import fetchw from '@/fetchWrapper'
+import { useThemeStore } from '@/stores/themeStore.ts'
+
+const theme = useThemeStore()
 
 interface Settings {
   avatarChangeCooldown: number
@@ -15,6 +18,7 @@ function getSettings() {
     method: 'GET',
   }).then(async (resp) => {
     state.settings = await resp.json()
+    theme.setColorPrimary(state.settings.colorPrimary)
   })
 }
 getSettings()
@@ -44,6 +48,7 @@ function updatePrimaryColor(value: string) {
     alert('Color must be a hexadecimal color value, six characters in length.')
     return
   }
+  theme.setColorPrimary(value)
   fetchw('/settings', {
     method: 'POST',
     headers: {
@@ -63,7 +68,7 @@ function updatePrimaryColor(value: string) {
         <div class="input-group">
           <Field
             :editable="true"
-            :value="state.settings?.avatarChangeCooldown"
+            :value="state.settings.avatarChangeCooldown"
             @change="updateAvatarChangeCooldown"
           />
         </div>
@@ -75,7 +80,7 @@ function updatePrimaryColor(value: string) {
         <div class="input-group">
           <Field
             :editable="true"
-            :value="state.settings?.colorPrimary"
+            :value="state.settings.colorPrimary"
             @change="updatePrimaryColor"
           />
         </div>

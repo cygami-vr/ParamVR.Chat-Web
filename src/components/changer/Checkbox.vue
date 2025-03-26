@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { useThemeStore } from '@/stores/themeStore.ts'
+import LockButton from '@/components/changer/LockButton.vue'
+import ThemedCheckbox from '@/components/theme/ThemedCheckbox.vue'
 
-const theme = useThemeStore()
 const props = defineProps(['param'])
 const emit = defineEmits(['change', 'lock'])
 const input = ref(null as unknown as HTMLInputElement)
@@ -24,30 +24,6 @@ watch(
     input.value.checked = isTrue(after)
   },
 )
-
-function getCheckboxClass() {
-  return theme.colorPrimary ? 'themedCheckbox' : ''
-}
-
-function getClasses() {
-  let classes = ''
-  if (props.param.locked) {
-    if (props.param.lockKey) {
-      classes = 'text-primary'
-      if (theme.colorPrimary) {
-        classes += ' color-theme'
-      }
-    } else {
-      classes = 'text-danger'
-    }
-  } else {
-    classes = 'text-muted'
-  }
-  if (theme.colorPrimary) {
-    classes += ' theme-focus'
-  }
-  return classes
-}
 </script>
 
 <template>
@@ -57,11 +33,9 @@ function getClasses() {
   <div class="row align-items-center justify-content-between">
     <div class="col-4 flex-grow-1">
       <label class="form-check form-switch" :for="param.name">
-        <input
-          :class="`form-check-input ${getCheckboxClass()}`"
+        <ThemedCheckbox
           :disabled="param.locked"
           :checked="isTrue(param.value)"
-          type="checkbox"
           :name="param.name"
           :id="param.name"
           @change="onChange"
@@ -72,27 +46,8 @@ function getClasses() {
         </div>
       </label>
     </div>
-    <div v-if="param.lockable == 'Y'" class="col-4 text-end">
-      <button
-        type="button"
-        :class="`btn btn-primary-outline material-icons
-             ${getClasses()}`"
-        @click="$emit('lock')"
-      >
-        {{ param.locked ? 'lock' : 'lock_open' }}
-      </button>
-    </div>
+    <LockButton :param="param" @lock="$emit('lock')" />
   </div>
 </template>
 
-<style>
-.themedCheckbox:checked {
-  background-color: v-bind('theme.colorPrimary') !important;
-  border-color: v-bind('theme.colorPrimary') !important;
-}
-.themedCheckbox:focus {
-  box-shadow: v-bind('theme.boxShadow') !important;
-  border-color: v-bind('theme.lightHslCss') !important;
-  /*background-image: none !important;*/
-}
-</style>
+<style></style>

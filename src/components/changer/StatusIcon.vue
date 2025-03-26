@@ -12,22 +12,22 @@ function title() {
   return status ? props.on_status : props.off_status
 }
 
-function getClass() {
-  return props.status === invert ? 'text-muted' : 'text-primary'
-}
-
-function getStyleOverride() {
-  return props.status === invert ? '' : theme.textPrimary
+function getClasses() {
+  let classes = 'col-2 material-icons'
+  if (props.status === invert) {
+    classes += ' text-muted'
+  } else {
+    classes += ' text-primary'
+    if (theme.colorPrimary) {
+      classes += ' color-theme'
+    }
+  }
+  return classes
 }
 </script>
 
 <template>
-  <span
-    :style="getStyleOverride()"
-    v-if="props.status != null"
-    :class="`col-2 material-icons ${getClass()}`"
-    :title="title()"
-  >
+  <span v-if="props.status != null" :class="getClasses()" :title="title()">
     {{ props.status === invert ? props.icon_off : props.icon_on }}
   </span>
 </template>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { reactive } from 'vue'
+import ThemedButton from '@/components/theme/ThemedButton.vue'
 import {
   type InviteObject,
   type InviteParameter,
@@ -102,13 +103,12 @@ function deleteAvatarChange(invite: InviteObject, avaId: number) {
   <div class="col-4 text-center">
     <div class="p-3 border border-secondary rounded-3">
       <div class="input-group">
-        <button
-          type="button"
-          class="btn btn-outline-primary copy-url-button"
+        <ThemedButton
+          defaultClass="btn-outline-primary copy-url-button"
           @click="() => copyInviteLink(invite)"
         >
           <span>{{ invite.url }}</span>
-        </button>
+        </ThemedButton>
         <input
           class="form-control"
           type="text"
@@ -116,14 +116,13 @@ function deleteAvatarChange(invite: InviteObject, avaId: number) {
           :title="getExpiryDateTime(invite)"
           readonly
         />
-        <button
-          type="button"
-          class="btn btn-outline-primary"
+        <ThemedButton
+          defaultClass="btn-outline-primary"
           data-bs-toggle="collapse"
           :data-bs-target="`#editInvite${invite.url}`"
         >
           Edit
-        </button>
+        </ThemedButton>
         <button type="button" class="btn btn-outline-danger" @click="() => deleteInvite(invite)">
           Delete
         </button>
@@ -145,9 +144,7 @@ function deleteAvatarChange(invite: InviteObject, avaId: number) {
                 </select>
               </div>
               <div class="col-2">
-                <button type="button" class="btn btn-primary" @click="() => addParameter(invite)">
-                  Add
-                </button>
+                <ThemedButton @click="() => addParameter(invite)"> Add </ThemedButton>
               </div>
             </div>
             <ul class="mt-2 list-group">
@@ -187,13 +184,7 @@ function deleteAvatarChange(invite: InviteObject, avaId: number) {
                 </select>
               </div>
               <div class="col-2">
-                <button
-                  type="button"
-                  class="btn btn-primary"
-                  @click="() => addAvatarChange(invite)"
-                >
-                  Add
-                </button>
+                <ThemedButton @click="() => addAvatarChange(invite)"> Add </ThemedButton>
               </div>
             </div>
             <ul class="mt-2 list-group">

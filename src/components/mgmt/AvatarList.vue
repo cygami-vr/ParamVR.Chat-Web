@@ -2,6 +2,9 @@
 import { reactive, ref } from 'vue'
 import Field from '@/components/mgmt/Field.vue'
 import ImageInput from '@/components/mgmt/ImageInput.vue'
+import ThemedButton from '@/components/theme/ThemedButton.vue'
+import ThemedCheckbox from '@/components/theme/ThemedCheckbox.vue'
+import ThemedRadioButton from '@/components/theme/ThemedRadioButton.vue'
 import fetchw from '@/fetchWrapper'
 import type Avatar from '@/model/Avatar'
 
@@ -120,18 +123,17 @@ function onAvatarSelected(avatar: Avatar) {
         />
       </div>
       <div class="col-2">
-        <button type="button" class="btn btn-primary" @click="addAvatar">Add Avatar</button>
+        <ThemedButton @click="addAvatar">Add Avatar</ThemedButton>
       </div>
     </div>
     <div class="h5 mt-1">Avatars</div>
     <div v-if="avatars.length == 0">You have no avatars. Create one to get started.</div>
     <div class="input-group mb-2" v-for="avatar in avatars" :key="avatar.id">
       <div class="input-group-text">
-        <input
-          class="form-check-input mt-0"
-          type="radio"
+        <ThemedRadioButton
+          defaultClass="form-check-input mt-0"
           name="avatarList"
-          @change="(evt) => onAvatarSelected(avatar)"
+          @change="(evt: Event) => onAvatarSelected(avatar)"
         />
       </div>
 
@@ -149,12 +151,10 @@ function onAvatarSelected(avatar: Avatar) {
       />
       <div class="input-group-text">
         <div class="form-check">
-          <input
-            class="form-check-input"
+          <ThemedCheckbox
             :checked="avatar.allowChange == 'Y'"
-            type="checkbox"
             :id="`allowChangeCheckbox${avatar.id}`"
-            @change="(evt) => updateAvatarAllowChange(avatar, evt)"
+            @change="(evt: Event) => updateAvatarAllowChange(avatar, evt)"
           />
           <label class="form-check-label" :for="`allowChangeCheckbox${avatar.id}`"
             >Allow changing</label
@@ -163,13 +163,11 @@ function onAvatarSelected(avatar: Avatar) {
       </div>
       <div class="input-group-text">
         <div class="form-check">
-          <input
-            class="form-check-input"
+          <ThemedCheckbox
             :checked="avatar.changeRequiresInvite == 'Y'"
-            type="checkbox"
             :disabled="avatar.allowChange == 'N'"
             :id="`changeRequiresInviteCheckbox${avatar.id}`"
-            @change="(evt) => updateAvatarChangeRequiresInvite(avatar, evt)"
+            @change="(evt: Event) => updateAvatarChangeRequiresInvite(avatar, evt)"
           />
           <label class="form-check-label" :for="`changeRequiresInviteCheckbox${avatar.id}`"
             >Change requires invite</label

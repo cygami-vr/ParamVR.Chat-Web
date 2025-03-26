@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { reactive, ref, nextTick, type Ref } from 'vue'
+import ThemedButton from '@/components/theme/ThemedButton.vue'
 
 const props = defineProps(['editable', 'value', 'label', 'type'])
 const state = reactive({ editing: false, value: props.value || '' })
@@ -69,9 +70,9 @@ function saveOrEdit() {
     :disabled="!state.editing"
     :readonly="!props.editable"
   />
-  <button v-if="editable" type="button" @click="saveOrEdit" class="btn btn-primary">
+  <ThemedButton v-if="editable" @click="saveOrEdit">
     {{ state.editing ? 'Save' : 'Edit' }}
-  </button>
+  </ThemedButton>
 </template>
 
 <style></style>

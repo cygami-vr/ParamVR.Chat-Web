@@ -58,15 +58,19 @@ function toLightHslCss(hsl: Array<number>) {
 
 export const useThemeStore = defineStore('theme', {
   state: () => {
-    return { colorPrimary: '', textPrimary: '', boxShadow: '', lightHslCss: '' }
+    return { colorPrimary: '', boxShadow: '', lightHslCss: '' }
   },
   actions: {
     setColorPrimary(colorPrimary: string) {
+      if (!colorPrimary) {
+        this.lightHslCss = ''
+        this.colorPrimary = ''
+        this.boxShadow = ''
+        return
+      }
+
       this.lightHslCss = toLightHslCss(hexToCssHsl(colorPrimary))
       this.colorPrimary = '#' + colorPrimary
-
-      this.textPrimary = 'color: ' + this.colorPrimary + ' !important'
-
       this.boxShadow = '0 0 0 1px #fff, 0 0 0 0.25rem ' + this.colorPrimary + '40'
     },
   },

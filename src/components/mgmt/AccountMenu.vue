@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import AboutButton from '@/components/AboutButton.vue'
+import ThemedButton from '@/components/theme/ThemedButton.vue'
 import fetchw from '@/fetchWrapper'
 
 const state = reactive({
@@ -66,14 +67,13 @@ function copyParameterKey() {
     <div class="container-fluid justify-content-end">
       <div class="me-3"><AboutButton /></div>
       <div class="dropdown text-end">
-        <button
-          class="btn btn-light dropdown-toggle"
-          type="button"
+        <ThemedButton
+          defaultClass="btn-light dropdown-toggle"
           data-bs-toggle="dropdown"
           aria-expanded="false"
         >
           You are logged in as {{ name }}
-        </button>
+        </ThemedButton>
         <ul class="dropdown-menu">
           <li>
             <button

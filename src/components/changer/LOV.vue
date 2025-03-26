@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useThemeStore } from '@/stores/themeStore.ts'
+import LockButton from '@/components/changer/LockButton.vue'
 
 const theme = useThemeStore()
 const props = defineProps(['param'])
@@ -14,42 +15,13 @@ function onChange(evt: Event) {
 function getRadioClass() {
   return theme.colorPrimary ? 'themedLov' : ''
 }
-
-function getClasses() {
-  let classes = ''
-  if (props.param.locked) {
-    if (props.param.lockKey) {
-      classes = 'text-primary'
-      if (theme.colorPrimary) {
-        classes += ' color-theme'
-      }
-    } else {
-      classes = 'text-danger'
-    }
-  } else {
-    classes = 'text-muted'
-  }
-  if (theme.colorPrimary) {
-    classes += ' theme-focus'
-  }
-  return classes
-}
 </script>
 
 <template>
   <div class="row">
     <div v-if="param.lockable == 'Y'" class="col-4"></div>
     <div class="col-4 flex-grow-1 h5">{{ param.description }}</div>
-    <div v-if="param.lockable == 'Y'" class="col-4 text-end">
-      <button
-        type="button"
-        :class="`btn btn-primary-outline material-icons text-center
-             ${getClasses()}`"
-        @click="$emit('lock')"
-      >
-        {{ param.locked ? 'lock' : 'lock_open' }}
-      </button>
-    </div>
+    <LockButton :param="param" @lock="$emit('lock')" />
   </div>
   <div class="text-center mb-2" v-if="param.image">
     <img :src="param.image" class="rounded-3" />
@@ -83,12 +55,5 @@ function getClasses() {
   max-height: 150px;
   overflow-y: auto;
   overflow-x: clip;
-}
-.themedLov:checked {
-  background-color: v-bind('theme.colorPrimary') !important;
-  border-color: v-bind('theme.colorPrimary') !important;
-}
-.themedLov:focus {
-  box-shadow: v-bind('theme.boxShadow') !important;
 }
 </style>
