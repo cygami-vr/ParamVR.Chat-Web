@@ -30,7 +30,7 @@ function getValue(input: HTMLInputElement) {
     <img :src="param.image" class="rounded-3" />
   </div>
   <ThemedSlider
-    class="w-75"
+    defaultClass="w-75"
     :disabled="param.locked"
     :value="((param.value - min) / range) * 100"
     :name="param.name"

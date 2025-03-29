@@ -14,7 +14,7 @@ function getClasses() {
 </script>
 
 <template>
-  <input :class="getClasses()" type="range" />
+  <input :class="getClasses()" type="range" step="any" />
 </template>
 
 <style>
@@ -31,9 +31,7 @@ function getClasses() {
 .themed-slider.form-range::-webkit-slider-thumb:active {
   background-color: v-bind('theme.lightHslCss') !important;
 }
-.themed-slider.form-range::-webkit-slider-runnable-track {
-  background-color: v-bind('theme.colorPrimary') !important;
-}
+
 .themed-slider.form-range::-moz-range-thumb {
   background-color: v-bind('theme.colorPrimary') !important;
 }
