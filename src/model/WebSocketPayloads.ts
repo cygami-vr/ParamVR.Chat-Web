@@ -1,4 +1,5 @@
 import type Avatar from '@/model/Avatar'
+import type Settings from '@/model/Settings'
 
 export class Change {}
 
@@ -53,14 +54,14 @@ export class AvatarChange extends Change {
 
 export interface Status {
   avatar: Avatar
-  muted: boolean
-  isPancake: boolean
-  afk: boolean
-  active: boolean
+  muted: boolean | undefined
+  isPancake: boolean | undefined
+  afk: boolean | undefined
+  active: boolean | undefined
   vrcOpen: boolean
   connected: boolean
   avatarChangeCooldown: number
-  colorPrimary: string
+  colors: Settings
 }
 
 export interface WebSocketMessage {

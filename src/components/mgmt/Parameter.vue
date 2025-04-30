@@ -129,9 +129,9 @@ function onRequiresInviteChange(evt: Event) {
 
 <template>
   <div class="col-6 text-center">
-    <div class="p-3 border bg-light rounded-3">
+    <div class="p-3 border bg-body rounded-3">
       <div
-        class="draggable"
+        class="draggable text-body"
         :draggable="true"
         @dragstart="(e) => dragStart(e)"
         @dragend="(e) => dragOver()"
@@ -144,7 +144,7 @@ function onRequiresInviteChange(evt: Event) {
         >{{ ` - ${typeString}, ${dataTypeString}` }}
       </div>
       <div class="row align-items-center text-start mt-1">
-        <div class="col-3">Description:</div>
+        <div class="col-3 text-body">Description:</div>
         <div class="col-9">
           <div class="input-group">
             <Field
@@ -157,7 +157,7 @@ function onRequiresInviteChange(evt: Event) {
         </div>
       </div>
       <div v-if="parameter.type != 4" class="row align-items-center text-start mt-1">
-        <div class="col-3">Default value:</div>
+        <div class="col-3 text-body">Default value:</div>
         <div class="col-9">
           <div class="input-group">
             <Field
@@ -171,7 +171,7 @@ function onRequiresInviteChange(evt: Event) {
       </div>
       <template v-if="parameter.type == 3">
         <div class="row align-items-center text-start mt-1">
-          <div class="col-3">Min value:</div>
+          <div class="col-3 text-body">Min value:</div>
           <div class="col-9">
             <div class="input-group">
               <Field
@@ -184,7 +184,7 @@ function onRequiresInviteChange(evt: Event) {
           </div>
         </div>
         <div class="row align-items-center text-start mt-1">
-          <div class="col-3">Max value:</div>
+          <div class="col-3 text-body">Max value:</div>
           <div class="col-9">
             <div class="input-group">
               <Field
@@ -199,7 +199,7 @@ function onRequiresInviteChange(evt: Event) {
       </template>
       <template v-else-if="parameter.type == 4">
         <div class="row align-items-center text-start mt-1">
-          <div class="col-3">Press value:</div>
+          <div class="col-3 text-body">Press value:</div>
           <div class="col-9">
             <div class="input-group">
               <Field
@@ -212,7 +212,7 @@ function onRequiresInviteChange(evt: Event) {
           </div>
         </div>
         <div class="row align-items-center text-start mt-1">
-          <div class="col-3">Release value:</div>
+          <div class="col-3 text-body">Release value:</div>
           <div class="col-9">
             <div class="input-group">
               <Field
@@ -225,7 +225,7 @@ function onRequiresInviteChange(evt: Event) {
           </div>
         </div>
         <div class="row align-items-center text-start mt-1">
-          <div class="col-3">Min press time (ms):</div>
+          <div class="col-3 text-body">Min press time (ms):</div>
           <div class="col-9">
             <div class="input-group">
               <Field
@@ -238,7 +238,7 @@ function onRequiresInviteChange(evt: Event) {
           </div>
         </div>
         <div class="row align-items-center text-start mt-1">
-          <div class="col-3">Max press time (ms):</div>
+          <div class="col-3 text-body">Max press time (ms):</div>
           <div class="col-9">
             <div class="input-group">
               <Field
@@ -258,7 +258,7 @@ function onRequiresInviteChange(evt: Event) {
             :id="`savedCheckbox${parameter.parameterId}`"
             @change="(evt: Event) => onSavedChange(evt)"
           />
-          <label class="form-check-label" :for="`savedCheckbox${parameter.parameterId}`"
+          <label class="form-check-label text-body" :for="`savedCheckbox${parameter.parameterId}`"
             >Is saved</label
           >
         </div>
@@ -268,7 +268,9 @@ function onRequiresInviteChange(evt: Event) {
             :id="`lockableCheckbox${parameter.parameterId}`"
             @change="(evt: Event) => onLockableChange(evt)"
           />
-          <label class="form-check-label" :for="`lockableCheckbox${parameter.parameterId}`"
+          <label
+            class="form-check-label text-body"
+            :for="`lockableCheckbox${parameter.parameterId}`"
             >Is lockable</label
           >
         </div>
@@ -278,7 +280,9 @@ function onRequiresInviteChange(evt: Event) {
             :id="`requiresInviteCheckbox${parameter.parameterId}`"
             @change="(evt: Event) => onRequiresInviteChange(evt)"
           />
-          <label class="form-check-label" :for="`requiresInviteCheckbox${parameter.parameterId}`"
+          <label
+            class="form-check-label text-body"
+            :for="`requiresInviteCheckbox${parameter.parameterId}`"
             >Requires invite</label
           >
         </div>
@@ -368,12 +372,12 @@ function onRequiresInviteChange(evt: Event) {
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title">Really delete this parameter?</h5>
+              <h5 class="modal-title text-body">Really delete this parameter?</h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
             </div>
             <div class="modal-body">
               <div class="row g-3 justify-content-start">
-                <div class="col-12">Parameter name: {{ parameter.name }}</div>
+                <div class="col-12 text-body">Parameter name: {{ parameter.name }}</div>
               </div>
             </div>
             <div class="modal-footer">

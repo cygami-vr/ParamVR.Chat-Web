@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import type Settings from '@/model/Settings.ts'
 
 // This function shamelessly copied from the internet
 function hexToCssHsl(hex: string) {
@@ -58,20 +59,74 @@ function toLightHslCss(hsl: Array<number>) {
 
 export const useThemeStore = defineStore('theme', {
   state: () => {
-    return { colorPrimary: '', boxShadow: '', lightHslCss: '' }
+    const browserDarkMode =
+      window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+    const localStorageTheme = localStorage.getItem('theme')
+    let darkMode: boolean
+    if (localStorageTheme) {
+      darkMode = localStorageTheme === 'dark'
+    } else {
+      darkMode = browserDarkMode
+      localStorage.setItem('theme', darkMode ? 'dark' : 'light')
+    }
+    console.log(
+      `Initializing theme. Browser dark mode = ${browserDarkMode}, Local storage theme = ${localStorageTheme}`,
+    )
+
+    return {
+      colorPrimary: '',
+      boxShadow: '',
+      lightHslCss: '',
+      darkMode: darkMode,
+      colorSecondary: '',
+      darkModeColorPrimary: '',
+      darkModeColorSecondary: '',
+      effectiveColorPrimary: '',
+      effectiveColorSecondary: '',
+    }
   },
   actions: {
-    setColorPrimary(colorPrimary: string) {
-      if (!colorPrimary) {
-        this.lightHslCss = ''
-        this.colorPrimary = ''
-        this.boxShadow = ''
-        return
-      }
+    setEffectiveColors() {
+      this.lightHslCss = ''
+      this.boxShadow = ''
+      this.effectiveColorPrimary = ''
+      this.effectiveColorSecondary = ''
 
-      this.lightHslCss = toLightHslCss(hexToCssHsl(colorPrimary))
-      this.colorPrimary = '#' + colorPrimary
-      this.boxShadow = '0 0 0 1px #fff, 0 0 0 0.25rem ' + this.colorPrimary + '40'
+      if (this.darkMode) {
+        if (this.darkModeColorPrimary) {
+          this.lightHslCss = toLightHslCss(hexToCssHsl(this.darkModeColorPrimary))
+          this.effectiveColorPrimary = this.darkModeColorPrimary
+          this.boxShadow = '0 0 0 1px #fff, 0 0 0 0.25rem ' + this.darkModeColorPrimary + '40'
+        }
+        if (this.darkModeColorSecondary) {
+          this.effectiveColorSecondary = this.darkModeColorSecondary
+        }
+      } else {
+        if (this.colorPrimary) {
+          this.lightHslCss = toLightHslCss(hexToCssHsl(this.colorPrimary))
+          this.effectiveColorPrimary = this.colorPrimary
+          this.boxShadow = '0 0 0 1px #fff, 0 0 0 0.25rem ' + this.colorPrimary + '40'
+        }
+        if (this.colorSecondary) {
+          this.effectiveColorSecondary = this.colorSecondary
+        }
+      }
+    },
+    setColors(settings: Settings) {
+      this.colorPrimary = settings.colorPrimary ? '#' + settings.colorPrimary : ''
+      this.colorSecondary = settings.colorSecondary ? '#' + settings.colorSecondary : ''
+      this.darkModeColorPrimary = settings.darkModeColorPrimary
+        ? '#' + settings.darkModeColorPrimary
+        : ''
+      this.darkModeColorSecondary = settings.darkModeColorSecondary
+        ? '#' + settings.darkModeColorSecondary
+        : ''
+      this.setEffectiveColors()
+    },
+    setDarkMode(darkMode: boolean) {
+      this.darkMode = darkMode
+      localStorage.setItem('theme', darkMode ? 'dark' : 'light')
+      this.setEffectiveColors()
     },
   },
 })

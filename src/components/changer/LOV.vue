@@ -15,7 +15,7 @@ function onChange(evt: Event) {
 <template>
   <div class="row">
     <div v-if="param.lockable == 'Y'" class="col-4"></div>
-    <div class="col-4 flex-grow-1 h5">{{ param.description }}</div>
+    <div class="col-4 flex-grow-1 h5 text-body">{{ param.description }}</div>
     <LockButton :param="param" @lock="$emit('lock')" />
   </div>
   <div class="text-center mb-2" v-if="param.image">
@@ -24,7 +24,7 @@ function onChange(evt: Event) {
   <div class="lov-scroll">
     <template v-for="value in param.values" :key="value.value">
       <div class="form-check text-start">
-        <label :for="param.name + value.value" class="row justify-content-center">
+        <label :for="param.name + value.value" class="row justify-content-center text-body">
           <div class="col-1">
             <ThemedRadioButton
               :disabled="param.locked"

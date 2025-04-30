@@ -23,7 +23,7 @@ function getValue(input: HTMLInputElement) {
 <template>
   <div class="row">
     <div v-if="param.lockable == 'Y'" class="col-4"></div>
-    <div class="col-4 flex-grow-1 h5">{{ param.description }}</div>
+    <div class="col-4 flex-grow-1 h5 text-body">{{ param.description }}</div>
     <LockButton :param="param" @lock="$emit('lock')" />
   </div>
   <div class="text-center mb-1" v-if="param.image">

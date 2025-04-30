@@ -68,6 +68,12 @@ function updateAvatarVrcUuid(avatar: Avatar, vrcUuid: string) {
   updateAvatar(newValue)
 }
 
+function updateAvatarTitle(avatar: Avatar, title: string) {
+  const newValue = { ...avatar }
+  newValue.title = title
+  updateAvatar(newValue)
+}
+
 function updateAvatarAllowChange(avatar: Avatar, evt: Event) {
   if (evt && evt.target && evt.target instanceof HTMLInputElement) {
     const newValue = { ...avatar }
@@ -103,7 +109,7 @@ function onAvatarSelected(avatar: Avatar) {
 <template>
   <div>
     <div class="row">
-      <div class="col-12 h5">Add an avatar</div>
+      <div class="col-12 h5 text-body">Add an avatar</div>
       <div class="col-5">
         <input
           name="name"
@@ -118,7 +124,7 @@ function onAvatarSelected(avatar: Avatar) {
           name="vrcUuid"
           type="text"
           v-model="state.vrcUuid"
-          placeholder="VRC UUID"
+          placeholder="VRC Blueprint ID"
           class="form-control"
         />
       </div>
@@ -127,7 +133,9 @@ function onAvatarSelected(avatar: Avatar) {
       </div>
     </div>
     <div class="h5 mt-1">Avatars</div>
-    <div v-if="avatars.length == 0">You have no avatars. Create one to get started.</div>
+    <div class="text-body" v-if="avatars.length == 0">
+      You have no avatars. Create one to get started.
+    </div>
     <div class="input-group mb-2" v-for="avatar in avatars" :key="avatar.id">
       <div class="input-group-text">
         <ThemedRadioButton
@@ -147,7 +155,13 @@ function onAvatarSelected(avatar: Avatar) {
         :value="avatar.vrcUuid"
         :editable="true"
         @change="(vrcUuid) => updateAvatarVrcUuid(avatar, vrcUuid)"
-        label="VRC UUID"
+        label="VRC Blueprint ID"
+      />
+      <Field
+        :value="avatar.title"
+        :editable="true"
+        @change="(title) => updateAvatarTitle(avatar, title)"
+        label="Custom title"
       />
       <div class="input-group-text">
         <div class="form-check">
@@ -210,13 +224,15 @@ function onAvatarSelected(avatar: Avatar) {
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Really delete this avatar?</h5>
+          <h5 class="modal-title text-body">Really delete this avatar?</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
         </div>
         <div class="modal-body">
           <div v-if="state.deletingAvatar" class="row g-3 justify-content-start">
-            <div class="col-12">Avatar name: {{ state.deletingAvatar.name }}</div>
-            <div class="col-12">Avatar VRC UUID: {{ state.deletingAvatar.vrcUuid }}</div>
+            <div class="col-12 text-body">Avatar name: {{ state.deletingAvatar.name }}</div>
+            <div class="col-12 text-body">
+              Avatar VRC Blueprint ID: {{ state.deletingAvatar.vrcUuid }}
+            </div>
           </div>
         </div>
         <div class="modal-footer">

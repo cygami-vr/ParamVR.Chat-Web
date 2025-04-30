@@ -83,7 +83,7 @@ function getEligible() {
   <div class="container overflow-hidden">
     <template v-if="state.userName">
       <div class="row mt-1">
-        <div class="p-3 w-100 border bg-light rounded-3">
+        <div class="p-3 w-100 border bg-body rounded-3">
           <div class="row">
             <AvatarList
               @avatar-selected="(avatar) => (state.avatar = avatar)"
@@ -93,31 +93,31 @@ function getEligible() {
         </div>
       </div>
       <div class="row mt-1">
-        <div class="p-3 w-100 border bg-light rounded-3">
+        <div class="p-3 w-100 border bg-body rounded-3">
           <UserSettings />
         </div>
       </div>
       <div class="row mt-1">
-        <div class="p-3 w-100 border bg-light rounded-3">
+        <div class="p-3 w-100 border bg-body rounded-3">
           <div class="row">
             <InviteList v-if="state.eligible" :eligible="state.eligible" />
           </div>
         </div>
       </div>
-      <div class="row justify-content-center mt-1">
-        <div class="p-3 w-100 border bg-light rounded-3">
+      <div class="row justify-content-center mt-1 mb-1">
+        <div class="p-3 w-100 border bg-body rounded-3">
           <div class="row text-start">
             <AddParameterForm
               v-if="state.avatar"
               @parameter-added="reloadParameters"
               :avatarId="state.avatar.id"
             />
-            <div v-else>Select an avatar to manage parameters.</div>
+            <div class="text-body" v-else>Select an avatar to manage parameters.</div>
           </div>
         </div>
       </div>
-      <div v-if="state.avatar" class="row gy-3 justify-content-center mt-1">
-        <div v-if="activeParameters.length == 0" class="p-3 w-100 border bg-light rounded-3">
+      <div v-if="state.avatar" class="row gy-3 justify-content-center mt-1 mb-1">
+        <div v-if="activeParameters.length == 0" class="p-3 w-100 border bg-body rounded-3">
           <div class="row justify-content-center text-center">
             <div class="mb-3">This avatar has no parameters yet.</div>
           </div>
@@ -133,7 +133,7 @@ function getEligible() {
     </template>
 
     <div v-else class="row justify-content-center mt-1">
-      <div class="p-3 w-50 border bg-light rounded-3">
+      <div class="p-3 w-50 border bg-body rounded-3">
         <LoginForm @logged-in="loggedIn" />
       </div>
     </div>

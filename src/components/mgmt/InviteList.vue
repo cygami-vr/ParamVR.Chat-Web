@@ -47,7 +47,7 @@ function createInvite() {
 </script>
 
 <template>
-  <div class="row h5"><div class="col">Invites</div></div>
+  <div class="row h5"><div class="col text-body">Invites</div></div>
   <div class="row align-items-center">
     <div class="col-2">
       <div class="form-check">
@@ -57,7 +57,7 @@ function createInvite() {
           v-model="state.neverExpires"
           name="neverExpires"
         />
-        <label class="form-check-label" for="neverExpires">Never Expires</label>
+        <label class="form-check-label text-body" for="neverExpires">Never Expires</label>
       </div>
     </div>
     <div v-if="!state.neverExpires" class="col-2">

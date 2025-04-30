@@ -7,13 +7,13 @@ defineEmits(['lock'])
 
 function getClasses() {
   let classes = 'btn btn-primary-outline material-icons text-center'
-  if (theme.colorPrimary) {
+  if (theme.effectiveColorPrimary) {
     classes += ' theme-focus'
   }
   if (props.param.locked) {
     if (props.param.lockKey) {
       classes += ' text-primary'
-      if (theme.colorPrimary) {
+      if (theme.effectiveColorPrimary) {
         classes += ' color-theme'
       }
     } else {

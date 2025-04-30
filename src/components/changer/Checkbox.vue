@@ -41,7 +41,7 @@ watch(
           @change="onChange"
           ref="input"
         />
-        <div class="form-check-label h5 text-break" :title="param.description">
+        <div class="form-check-label h5 text-break text-body" :title="param.description">
           {{ param.description }}
         </div>
       </label>

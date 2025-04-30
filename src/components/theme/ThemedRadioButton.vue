@@ -6,7 +6,7 @@ const props = defineProps(['defaultClass'])
 
 function getClasses() {
   let classes = props['defaultClass'] || 'form-check-input'
-  if (theme.colorPrimary) {
+  if (theme.effectiveColorPrimary) {
     classes += ' themed-lov'
   }
   return classes
@@ -19,8 +19,8 @@ function getClasses() {
 
 <style>
 .themed-lov:checked {
-  background-color: v-bind('theme.colorPrimary') !important;
-  border-color: v-bind('theme.colorPrimary') !important;
+  background-color: v-bind('theme.effectiveColorPrimary') !important;
+  border-color: v-bind('theme.effectiveColorPrimary') !important;
 }
 .themed-lov:focus {
   box-shadow: v-bind('theme.boxShadow') !important;

@@ -15,6 +15,7 @@ import LOV from '@/components/changer/LOV.vue'
 import Button from '@/components/changer/Button.vue'
 import StatusIcon from '@/components/changer/StatusIcon.vue'
 import AboutButton from '@/components/AboutButton.vue'
+import ThemeSwitcher from '@/components/theme/ThemeSwitcher.vue'
 import AvatarChanger from '@/components/changer/AvatarChanger.vue'
 import fetchw from '@/fetchWrapper'
 import type Avatar from '@/model/Avatar'
@@ -73,10 +74,11 @@ function handleSingleParameter(data: WebSocketMessage) {
 }
 
 function handleStatus(status: Status) {
-  if (
-    (status.vrcOpen !== undefined || status.connected !== undefined) &&
-    (status.vrcOpen !== state.status?.vrcOpen || status.connected !== state.status?.connected)
-  ) {
+  const disconnected =
+    status.connected !== undefined && state.status?.connected && !status?.connected
+  const vrcClosed = status.vrcOpen !== undefined && state.status?.vrcOpen && !status?.vrcOpen
+  console.log(`Handling status. Disconnected = ${disconnected}, VRC Closed = ${vrcClosed}`)
+  if (disconnected || vrcClosed) {
     resetStatus()
   }
   Object.assign(state.status, status)
@@ -96,9 +98,16 @@ function handleStatus(status: Status) {
       state.changeAvatarCooldownActive = false
     }
   }
-  if (status.colorPrimary) {
-    theme.setColorPrimary(status.colorPrimary)
+  if (status.colors) {
+    theme.setColors(status.colors)
   }
+}
+
+function getTitle() {
+  if (state.status?.avatar?.title) {
+    return state.status?.avatar?.title
+  }
+  return `${state.targetUser}'s avatar parameters`
 }
 
 function createSession() {
@@ -147,12 +156,10 @@ function onSocketMessage(evt: MessageEvent) {
 }
 
 function resetStatus() {
-  state.status = {
-    connected: state.status?.connected,
-    vrcOpen: state.status?.vrcOpen,
-    avatar: { image: state.status?.avatar?.image },
-    colorPrimary: state.status?.colorPrimary,
-  } as Status
+  state.status.muted = undefined
+  state.status.isPancake = undefined
+  state.status.afk = undefined
+  state.status.active = undefined
 }
 
 function connect(sessionId: string) {
@@ -277,7 +284,9 @@ onUnmounted(() => {
   buttonTimeouts.forEach((timeout) => {
     clearTimeout(timeout)
   })
-  if (avatarChangeCooldownTimeout != -1) clearTimeout(avatarChangeCooldownTimeout)
+  if (avatarChangeCooldownTimeout != -1) {
+    clearTimeout(avatarChangeCooldownTimeout)
+  }
 })
 
 createSession()
@@ -287,7 +296,7 @@ createSession()
   <div class="container overflow-hidden">
     <div class="fixed-top">
       <div class="float-end text-end">
-        <div class="input-group float-end mt-1 me-1"><AboutButton /></div>
+        <div class="input-group float-end mt-1 me-1"><ThemeSwitcher /><AboutButton /></div>
       </div>
     </div>
     <div v-if="state.error" class="row justify-content-center mt-1">
@@ -299,12 +308,12 @@ createSession()
           <img id="avatarImage" class="img-thumbnail" :src="state.status?.avatar?.image" />
         </div>
       </div>
-      <div class="p-3 w-50 text-center border bg-light rounded-3 h4">
-        {{ state.targetUser }}'s avatar parameters
+      <div class="p-3 w-50 text-center border bg-body rounded-3 h4 text-body">
+        {{ getTitle() }}
       </div>
     </div>
     <div class="row justify-content-center mt-1">
-      <div class="p-3 w-50 border bg-light rounded-3">
+      <div class="p-3 w-50 border bg-body rounded-3 text-body">
         <div class="row justify-content-center text-center">
           <!-- Alternatives: cloud & cloud_off, power & power_off -->
           <StatusIcon
@@ -363,14 +372,14 @@ createSession()
       @avatar-change="(chg) => send('avatar', chg)"
     />
 
-    <div class="row gy-3 justify-content-center mt-1">
+    <div class="row gy-3 justify-content-center mt-1 mb-1">
       <div class="col-6 text-center" v-if="parameters.length == 0">
         <div class="p-3 alert alert-warning rounded-3" role="alert">
           There are currently no available parameters to change.
         </div>
       </div>
       <div class="col-6 text-center" v-for="param in parameters" :key="param.name">
-        <div class="p-2 border bg-light rounded-3">
+        <div class="p-2 border bg-body rounded-3">
           <LOV
             v-if="param.type == 1"
             :param="param"

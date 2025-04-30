@@ -13,7 +13,7 @@ const model = computed({
 
 function getClasses() {
   let classes = props['defaultClass'] || 'form-check-input'
-  if (theme.colorPrimary) {
+  if (theme.effectiveColorPrimary) {
     classes += ' themed-checkbox'
   }
   return classes
@@ -26,8 +26,8 @@ function getClasses() {
 
 <style>
 .themed-checkbox:checked {
-  background-color: v-bind('theme.colorPrimary') !important;
-  border-color: v-bind('theme.colorPrimary') !important;
+  background-color: v-bind('theme.effectiveColorPrimary') !important;
+  border-color: v-bind('theme.effectiveColorPrimary') !important;
 }
 .themed-checkbox:focus {
   box-shadow: v-bind('theme.boxShadow') !important;

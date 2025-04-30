@@ -17,7 +17,7 @@ fetchw('/discord', {
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="aboutLabel">About ParamVR.Chat</h5>
+          <h5 class="modal-title text-body" id="aboutLabel">About ParamVR.Chat</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" />
         </div>
         <div class="modal-body">

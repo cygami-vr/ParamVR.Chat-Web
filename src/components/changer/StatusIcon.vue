@@ -18,7 +18,7 @@ function getClasses() {
     classes += ' text-muted'
   } else {
     classes += ' text-primary'
-    if (theme.colorPrimary) {
+    if (theme.effectiveColorPrimary) {
       classes += ' color-theme'
     }
   }

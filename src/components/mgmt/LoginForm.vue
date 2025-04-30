@@ -33,7 +33,7 @@ function userLogin() {
 
 <template>
   <div class="row g-3 justify-content-start">
-    <div class="col-12 h4">Please log in to manage your account</div>
+    <div class="col-12 h4 text-body">Please log in to manage your account</div>
     <div class="col-6">
       <input
         class="form-control"

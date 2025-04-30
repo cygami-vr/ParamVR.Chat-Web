@@ -6,7 +6,7 @@ const props = defineProps(['defaultClass'])
 
 function getClasses() {
   let classes = 'form-range ' + (props['defaultClass'] || '')
-  if (theme.colorPrimary) {
+  if (theme.effectiveColorPrimary) {
     classes += ' themed-slider'
   }
   return classes
@@ -26,14 +26,14 @@ function getClasses() {
 }
 
 .themed-slider.form-range::-webkit-slider-thumb {
-  background-color: v-bind('theme.colorPrimary') !important;
+  background-color: v-bind('theme.effectiveColorPrimary') !important;
 }
 .themed-slider.form-range::-webkit-slider-thumb:active {
   background-color: v-bind('theme.lightHslCss') !important;
 }
 
 .themed-slider.form-range::-moz-range-thumb {
-  background-color: v-bind('theme.colorPrimary') !important;
+  background-color: v-bind('theme.effectiveColorPrimary') !important;
 }
 .themed-slider.form-range::-moz-range-thumb:active {
   background-color: v-bind('theme.lightHslCss') !important;

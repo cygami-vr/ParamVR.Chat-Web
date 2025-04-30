@@ -131,7 +131,7 @@ function deleteAvatarChange(invite: InviteObject, avaId: number) {
         <div class="row justify-content-center mt-1">
           <div class="p-2 w-100">
             <div class="row">
-              <div class="col-5">Select a parameter</div>
+              <div class="col-5 text-body">Select a parameter</div>
               <div class="col-4">
                 <select class="form-select" v-model="state.parameterId" name="inviteParameterName">
                   <option
@@ -171,7 +171,7 @@ function deleteAvatarChange(invite: InviteObject, avaId: number) {
               </li>
             </ul>
             <div class="mt-2 row">
-              <div class="col-5">Select an avatar</div>
+              <div class="col-5 text-body">Select an avatar</div>
               <div class="col-4">
                 <select class="form-select" v-model="state.avatarId" name="inviteAvatarName">
                   <option

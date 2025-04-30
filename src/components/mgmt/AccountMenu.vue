@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import AboutButton from '@/components/AboutButton.vue'
+import ThemeSwitcher from '@/components/theme/ThemeSwitcher.vue'
 import ThemedButton from '@/components/theme/ThemedButton.vue'
 import fetchw from '@/fetchWrapper'
 
@@ -65,6 +66,7 @@ function copyParameterKey() {
 <template>
   <nav class="navbar navbar-expand bg-secondary bg-gradient">
     <div class="container-fluid justify-content-end">
+      <div class="me-3"><ThemeSwitcher /></div>
       <div class="me-3"><AboutButton /></div>
       <div class="dropdown text-end">
         <ThemedButton
@@ -105,7 +107,7 @@ function copyParameterKey() {
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Change password</h5>
+          <h5 class="modal-title text-body">Change password</h5>
           <button
             type="button"
             class="btn-close"
@@ -140,9 +142,7 @@ function copyParameterKey() {
         <div class="modal-footer">
           <div class="row">
             <div class="col-12">
-              <button type="button" class="btn btn-primary" @click="changePassword">
-                Change password
-              </button>
+              <ThemedButton @click="changePassword"> Change password </ThemedButton>
             </div>
           </div>
         </div>
@@ -153,10 +153,10 @@ function copyParameterKey() {
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Really generate a new listen key?</h5>
+          <h5 class="modal-title text-body">Really generate a new listen key?</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
         </div>
-        <div class="modal-body">
+        <div class="modal-body text-body">
           <div class="row g-3 justify-content-start">
             <div class="col-12">This will replace your current listen key.</div>
           </div>
@@ -187,18 +187,16 @@ function copyParameterKey() {
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Your new listen key</h5>
+          <h5 class="modal-title text-body">Your new listen key</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
         </div>
         <div class="modal-body">
           <div class="row g-3 justify-content-start">
-            <div v-if="state.listenKey" class="col-12">
+            <div v-if="state.listenKey" class="col-12 text-body">
               Your new key is
               <div class="col input-group mt-1 mb-1">
                 <input type="text" class="form-control" :value="state.listenKey" readonly />
-                <button type="button" @click="copyParameterKey" class="btn btn-primary">
-                  Copy
-                </button>
+                <ThemedButton @click="copyParameterKey"> Copy </ThemedButton>
               </div>
               Make sure to save it somewhere. If it is lost, you may need to generate a new key.
             </div>

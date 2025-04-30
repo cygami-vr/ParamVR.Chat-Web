@@ -24,15 +24,19 @@ console.log(`Target: ${target}`)
 
 function getBgClasses() {
   let classes = 'bg-primary bg-gradient'
-  if (theme.colorPrimary) {
+  if (theme.effectiveColorPrimary) {
     classes += ' bg-primary-theme'
   }
   return classes
 }
+
+function getBsTheme() {
+  return theme.darkMode ? 'dark' : 'light'
+}
 </script>
 
 <template>
-  <div id="bg" :class="getBgClasses()">
+  <div id="bg" :class="getBgClasses()" :data-bs-theme="getBsTheme()">
     <Error />
     <AboutModal />
     <VrcParamChanger v-if="target" :target="target" :targetType="targetType" />
@@ -49,15 +53,15 @@ body,
 }
 
 .bg-primary-theme {
-  background-color: v-bind('theme.colorPrimary') !important;
+  background-color: v-bind('theme.effectiveColorPrimary') !important;
 }
 
 .border-primary-theme {
-  border-color: v-bind('theme.colorPrimary') !important;
+  border-color: v-bind('theme.effectiveColorPrimary') !important;
 }
 
 .color-theme {
-  color: v-bind('theme.colorPrimary') !important;
+  color: v-bind('theme.effectiveColorPrimary') !important;
 }
 
 .theme-focus:focus {
