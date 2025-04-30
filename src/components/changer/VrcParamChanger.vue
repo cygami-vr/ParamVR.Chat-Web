@@ -427,11 +427,4 @@ createSession()
   max-width: 256px;
   max-height: 256px;
 }
-
-.changeAvatarThumbnail {
-  max-width: 128px;
-  max-height: 128px;
-  width: auto;
-  height: auto;
-}
 </style>

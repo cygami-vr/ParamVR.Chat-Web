@@ -28,7 +28,7 @@ function getClasses() {
       <div class="row align-items-center justify-content-between mt-2">
         <div class="col-3 flex-grow-1 py-1" :key="ava.id" v-for="ava in changeableAvatars">
           <div class="text-center mb-2" v-if="ava.image">
-            <img class="rounded-3 changeAvatarThumbnail" :src="ava.image" />
+            <img class="rounded-3 img-fluid change-avatar-thumbnail" :src="ava.image" />
           </div>
           <ThemedButton
             @click="() => changeAvatar(ava.vrcUuid)"
@@ -43,4 +43,8 @@ function getClasses() {
   </div>
 </template>
 
-<style></style>
+<style>
+.change-avatar-thumbnail {
+  max-height: 128px;
+}
+</style>

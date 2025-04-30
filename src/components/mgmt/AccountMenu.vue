@@ -164,16 +164,14 @@ function copyParameterKey() {
         <div class="modal-footer">
           <div class="row">
             <div class="col">
-              <button
-                type="button"
-                class="btn btn-primary"
+              <ThemedButton
                 @click="generateListenKey"
                 data-bs-toggle="modal"
                 data-bs-target="#generateListenKey-keyGenerated"
                 data-bs-dismiss="modal"
               >
                 Yes
-              </button>
+              </ThemedButton>
             </div>
             <div class="col">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { reactive } from 'vue'
 import fetchw from '@/fetchWrapper'
+import ThemedButton from '@/components/theme/ThemedButton.vue'
 
 const state = reactive({ username: '', password: '', msg: null })
 const emit = defineEmits(['logged-in'])
@@ -53,7 +54,7 @@ function userLogin() {
       />
     </div>
     <div class="col-12">
-      <button type="button" class="btn btn-primary" @click="userLogin">Log in</button>
+      <ThemedButton @click="userLogin">Log in</ThemedButton>
     </div>
   </div>
 </template>
