@@ -30,6 +30,7 @@ const state = reactive({
   status: {} as Status,
   changeableAvatars: [] as Array<Avatar>,
   changeAvatarCooldownActive: true,
+  showOptions: localStorage.getItem('showOptions') !== 'false',
 })
 const parameters = ref(new Array<ParameterObject>())
 const props = defineProps(['targetType', 'target'])
@@ -250,6 +251,11 @@ function reconnect() {
   }
 }
 
+function toggleOptions() {
+  state.showOptions = !state.showOptions
+  localStorage.setItem('showOptions', state.showOptions.toString())
+}
+
 const reconnectInterval = setInterval(() => {
   if (!state.wsConnected && !connecting) {
     console.log('Attempting auto reconnect')
@@ -293,28 +299,39 @@ createSession()
 </script>
 
 <template>
-  <div class="container overflow-hidden">
-    <div class="fixed-top">
-      <div class="float-end text-end">
-        <div class="input-group float-end mt-1 me-1"><ThemeSwitcher /><AboutButton /></div>
+  <div class="overflow-hidden">
+    <div class="container mt-1 mb-1">
+      <div v-if="state.error" class="row justify-content-center mb-1">
+        <div class="p-3 w-75 rounded-3 alert alert-danger">{{ state.error }}</div>
       </div>
-    </div>
-    <div v-if="state.error" class="row justify-content-center mt-1">
-      <div class="p-3 w-75 rounded-3 alert alert-danger">{{ state.error }}</div>
-    </div>
-    <div class="row justify-content-center mt-1">
+
       <div v-if="state.status?.avatar?.image" class="row justify-content-center mb-2">
         <div class="col-6 text-center">
           <img id="avatarImage" class="img-thumbnail" :src="state.status?.avatar?.image" />
         </div>
       </div>
-      <div class="p-3 w-50 text-center border bg-body rounded-3 h4 text-body">
-        {{ getTitle() }}
+
+      <div class="row justify-content-center">
+        <div class="col-10 col-md-8 col-lg-6 p-3 text-center border bg-body rounded-3 h4 text-body">
+          <div>
+            <span>{{ getTitle() }}</span
+            ><span
+              class="material-icons float-end"
+              id="toggleOptionsButton"
+              @click="toggleOptions"
+              :title="state.showOptions ? 'Hide options' : 'Show options'"
+              >more_vert</span
+            >
+          </div>
+          <div class="row justify-content-evenly mt-3" v-if="state.showOptions">
+            <ThemeSwitcher class="col-5 col-md-4 col-lg-3 btn-sm" />
+            <AboutButton class="col-5 col-md-4 col-lg-3 btn-sm" />
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="row justify-content-center mt-1">
-      <div class="p-3 w-50 border bg-body rounded-3 text-body">
-        <div class="row justify-content-center text-center">
+
+      <div class="row justify-content-center mt-1">
+        <div class="col-10 col-md-8 col-lg-6 p-3 border bg-body rounded-3 text-body text-center">
           <!-- Alternatives: cloud & cloud_off, power & power_off -->
           <StatusIcon
             name="connection"
@@ -364,22 +381,24 @@ createSession()
           />
         </div>
       </div>
-    </div>
 
-    <AvatarChanger
-      :changeable-avatars="state.changeableAvatars"
-      :changeAvatarCooldownActive="state.changeAvatarCooldownActive"
-      @avatar-change="(chg) => send('avatar', chg)"
-    />
+      <AvatarChanger
+        :changeable-avatars="state.changeableAvatars"
+        :changeAvatarCooldownActive="state.changeAvatarCooldownActive"
+        @avatar-change="(chg) => send('avatar', chg)"
+      />
 
-    <div class="row gy-3 justify-content-center mt-1 mb-1">
-      <div class="col-6 text-center" v-if="parameters.length == 0">
-        <div class="p-3 alert alert-warning rounded-3" role="alert">
-          There are currently no available parameters to change.
+      <div class="row gy-3 justify-content-evenly mt-1">
+        <div class="col-10 col-md-8 col-lg-5 text-center" v-if="parameters.length == 0">
+          <div class="p-3 alert alert-warning rounded-3" role="alert">
+            There are currently no available parameters to change.
+          </div>
         </div>
-      </div>
-      <div class="col-6 text-center" v-for="param in parameters" :key="param.name">
-        <div class="p-2 border bg-body rounded-3">
+        <div
+          class="col-10 col-md-8 col-lg-5 text-center p-2 border bg-body rounded-3"
+          v-for="param in parameters"
+          :key="param.name"
+        >
           <LOV
             v-if="param.type == 1"
             :param="param"
@@ -424,7 +443,9 @@ createSession()
 
 <style>
 #avatarImage {
-  max-width: 256px;
   max-height: 256px;
+}
+#toggleOptionsButton:hover {
+  cursor: pointer;
 }
 </style>
