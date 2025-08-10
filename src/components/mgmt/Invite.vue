@@ -7,6 +7,7 @@ import {
   type InviteAvatarChange,
 } from '@/model/InviteObject'
 import fetchw from '@/fetchWrapper'
+import ThemedCheckbox from '../theme/ThemedCheckbox.vue'
 
 const props = defineProps(['invite', 'avatarId', 'parameters', 'eligible'])
 const state = reactive({
@@ -35,6 +36,13 @@ function addParameter(invite: InviteObject) {
 function addAvatarChange(invite: InviteObject) {
   invite.changeableAvatars.push({ avatarId: state.avatarId } as InviteAvatarChange)
   updateInvite(invite)
+}
+
+function updateAllowMuteLock(evt: Event, invite: InviteObject) {
+  if (evt && evt.target && evt.target instanceof HTMLInputElement) {
+    invite.allowMuteLock = evt.target.checked
+    updateInvite(invite)
+  }
 }
 
 function deleteInvite(invite: InviteObject) {
@@ -131,6 +139,20 @@ function deleteAvatarChange(invite: InviteObject, avaId: number) {
         <div class="row justify-content-center mt-1">
           <div class="p-2 w-100">
             <div class="row">
+              <div class="col-2">
+                <ThemedCheckbox
+                  :checked="invite.allowMuteLock"
+                  :id="`allowMuteLock${invite.id}`"
+                  @change="(evt: Event) => updateAllowMuteLock(evt, invite)"
+                />
+              </div>
+              <div class="col-10 text-body text-start">
+                <label class="form-check-label" :for="`allowMuteLock${invite.id}`"
+                  >Allow mute lock</label
+                >
+              </div>
+            </div>
+            <div class="mt-2 row">
               <div class="col-5 text-body">Select a parameter</div>
               <div class="col-4">
                 <select class="form-select" v-model="state.parameterId" name="inviteParameterName">

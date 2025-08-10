@@ -62,6 +62,8 @@ export interface Status {
   connected: boolean
   avatarChangeCooldown: number
   colors: Settings
+  muteLocked: boolean
+  muteLockedByOther: boolean
 }
 
 export interface WebSocketMessage {

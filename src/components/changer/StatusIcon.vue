@@ -13,7 +13,7 @@ function title() {
 }
 
 function getClasses() {
-  let classes = 'col-2 material-icons'
+  let classes = 'material-icons'
   if (props.status === invert) {
     classes += ' text-muted'
   } else {

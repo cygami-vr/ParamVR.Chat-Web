@@ -13,6 +13,7 @@ export interface InviteAvatarChange {
 export interface InviteObject {
   url: string
   expires: number
+  allowMuteLock: boolean
   parameters: Array<InviteParameter>
   changeableAvatars: Array<InviteAvatarChange>
 }

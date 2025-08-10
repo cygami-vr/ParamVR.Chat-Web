@@ -20,6 +20,9 @@ import AvatarChanger from '@/components/changer/AvatarChanger.vue'
 import fetchw from '@/fetchWrapper'
 import type Avatar from '@/model/Avatar'
 import { useThemeStore } from '@/stores/themeStore.ts'
+import ThemedCheckbox from '../theme/ThemedCheckbox.vue'
+import LockButton from './LockButton.vue'
+import MuteLockButton from './MuteLockButton.vue'
 
 const theme = useThemeStore()
 
@@ -27,6 +30,7 @@ const state = reactive({
   wsConnected: false,
   error: '',
   targetUser: '',
+  allowMuteLock: false,
   status: {} as Status,
   changeableAvatars: [] as Array<Avatar>,
   changeAvatarCooldownActive: true,
@@ -102,6 +106,9 @@ function handleStatus(status: Status) {
   if (status.colors) {
     theme.setColors(status.colors)
   }
+  if (status.avatar?.title) {
+    document.title = status.avatar.title
+  }
 }
 
 function getTitle() {
@@ -130,6 +137,7 @@ function createSession() {
   }).then(async (resp) => {
     const session = await resp.json()
     state.targetUser = session.targetUser
+    state.allowMuteLock = session.allowMuteLock
     document.cookie = `uuid=${session.clientId};max-age=2000000000`
     connect(session.sessionId)
   })
@@ -272,6 +280,17 @@ const pingInterval = setInterval(() => {
   }
 }, 60000)
 
+function muteLock() {
+  console.log(`Scheduling mute lock ${!state.status.muteLocked}`)
+  send('mutelock', {
+    change: {
+      name: 'chat-paramvr-mutelock',
+      value: !state.status.muteLocked,
+      dataType: 0,
+    },
+  })
+}
+
 const connectionState = computed(() => {
   const connected = state.status?.connected
   const vrcOpen = state.status?.vrcOpen
@@ -294,6 +313,8 @@ onUnmounted(() => {
     clearTimeout(avatarChangeCooldownTimeout)
   }
 })
+
+const optionsCollapseInit = state.showOptions ? 'show' : ''
 
 createSession()
 </script>
@@ -320,10 +341,15 @@ createSession()
               id="toggleOptionsButton"
               @click="toggleOptions"
               :title="state.showOptions ? 'Hide options' : 'Show options'"
+              data-bs-toggle="collapse"
+              data-bs-target="#more-options"
               >more_vert</span
             >
           </div>
-          <div class="row justify-content-evenly mt-3" v-if="state.showOptions">
+          <div
+            :class="`row justify-content-evenly mt-3 collapse ${optionsCollapseInit}`"
+            id="more-options"
+          >
             <ThemeSwitcher class="col-5 col-md-4 col-lg-3 btn-sm" />
             <AboutButton class="col-5 col-md-4 col-lg-3 btn-sm" />
           </div>
@@ -332,53 +358,67 @@ createSession()
 
       <div class="row justify-content-center mt-1">
         <div class="col-10 col-md-8 col-lg-6 p-3 border bg-body rounded-3 text-body text-center">
-          <!-- Alternatives: cloud & cloud_off, power & power_off -->
-          <StatusIcon
-            name="connection"
-            icon_on="wifi"
-            icon_off="wifi_off"
-            :status="connectionState"
-            on_status="Live connection"
-            off_status="No connection"
-          />
+          <div class="row justify-content-center">
+            <!-- Alternatives: cloud & cloud_off, power & power_off -->
+            <StatusIcon
+              class="col-2"
+              name="connection"
+              icon_on="wifi"
+              icon_off="wifi_off"
+              :status="connectionState"
+              on_status="Live connection"
+              off_status="No connection"
+            />
 
-          <StatusIcon
-            name="AFK"
-            icon_on="location_on"
-            icon_off="location_off"
-            :status="state.status?.afk"
-            on_status="Not AFK"
-            off_status="AFK"
-            invert="true"
-          />
+            <StatusIcon
+              class="col-2"
+              name="AFK"
+              icon_on="location_on"
+              icon_off="location_off"
+              :status="state.status?.afk"
+              on_status="Not AFK"
+              off_status="AFK"
+              invert="true"
+            />
 
-          <StatusIcon
-            name="activity"
-            icon_on="directions_run"
-            icon_off="bedtime"
-            :status="state.status?.active"
-            on_status="Active"
-            off_status="Inactive"
-          />
+            <StatusIcon
+              class="col-2"
+              name="activity"
+              icon_on="directions_run"
+              icon_off="bedtime"
+              :status="state.status?.active"
+              on_status="Active"
+              off_status="Inactive"
+            />
 
-          <StatusIcon
-            name="desktop"
-            icon_on="desktop_windows"
-            icon_off="desktop_access_disabled"
-            :status="state.status?.isPancake"
-            on_status="On desktop"
-            off_status="In VR"
-          />
+            <StatusIcon
+              class="col-2"
+              name="desktop"
+              icon_on="desktop_windows"
+              icon_off="desktop_access_disabled"
+              :status="state.status?.isPancake"
+              on_status="On desktop"
+              off_status="In VR"
+            />
 
-          <StatusIcon
-            name="microphone"
-            icon_on="mic"
-            icon_off="mic_off"
-            :status="state.status?.muted"
-            on_status="Unmuted"
-            off_status="Muted"
-            invert="true"
-          />
+            <div class="col-2">
+              <StatusIcon
+                name="microphone"
+                icon_on="mic"
+                icon_off="mic_off"
+                :status="state.status?.muted"
+                on_status="Unmuted"
+                off_status="Muted"
+                invert="true"
+              />
+              <MuteLockButton
+                v-if="state.allowMuteLock && connectionState"
+                :mute-locked="state.status?.muteLocked"
+                :mute-locked-by-other="state.status?.muteLockedByOther"
+                @lock="muteLock"
+              />
+            </div>
+          </div>
         </div>
       </div>
 

@@ -2,16 +2,16 @@
 import { useThemeStore } from '@/stores/themeStore.ts'
 
 const theme = useThemeStore()
-const props = defineProps(['param'])
+const props = defineProps(['muteLocked', 'muteLockedByOther'])
 defineEmits(['lock'])
 
 function getClasses() {
-  let classes = 'btn btn-primary-outline material-icons text-center'
+  let classes = 'btn material-icons fs-6'
   if (theme.effectiveColorPrimary) {
     classes += ' theme-focus'
   }
-  if (props.param.locked) {
-    if (props.param.lockKey) {
+  if (props.muteLocked) {
+    if (!props.muteLockedByOther) {
       classes += ' text-primary'
       if (theme.effectiveColorPrimary) {
         classes += ' color-theme'
@@ -26,22 +26,32 @@ function getClasses() {
 }
 
 function getTitle() {
-  if (props.param.locked) {
-    if (props.param.lockKey) {
-      return 'Unlock ' + props.param.description
+  if (props.muteLocked) {
+    if (!props.muteLockedByOther) {
+      return 'Mute locked'
     }
     return 'Locked by another user'
   }
-  return 'Lock ' + props.param.description
+  return 'Mute lock'
 }
 </script>
 
 <template>
-  <div v-if="param.lockable == 'Y'" class="col-4 text-end">
-    <button type="button" :class="getClasses()" @click="$emit('lock')" :title="getTitle()">
-      {{ param.locked ? 'lock' : 'lock_open' }}
-    </button>
-  </div>
+  <button
+    type="button"
+    :class="getClasses()"
+    @click="$emit('lock')"
+    :title="getTitle()"
+    id="muteLockBtn"
+  >
+    {{ muteLocked ? 'lock' : 'lock_open' }}
+  </button>
 </template>
 
-<style></style>
+<style>
+#muteLockBtn {
+  position: relative;
+  left: -15px;
+  top: 10px;
+}
+</style>
