@@ -8,30 +8,14 @@ import ThemedRadioButton from '@/components/theme/ThemedRadioButton.vue'
 import fetchw from '@/fetchWrapper'
 import type Avatar from '@/model/Avatar'
 
+const props = defineProps(['avatars'])
 const state = reactive({
   name: '',
   vrcUuid: '',
   activeAvatar: null as unknown as Avatar,
   deletingAvatar: null as unknown as Avatar,
 })
-const avatars = ref(new Array<Avatar>())
 const emit = defineEmits(['avatar-selected', 'avatar-changed'])
-
-function getAvatars() {
-  fetchw('/avatar', {
-    method: 'GET',
-  }).then(async (resp) => {
-    const json = await resp.json()
-    avatars.value = json
-    if (state.activeAvatar) {
-      state.activeAvatar = json.find((avatar: Avatar) => {
-        return avatar.id == state.activeAvatar.id
-      })
-    }
-    emit('avatar-changed')
-  })
-}
-getAvatars()
 
 function addAvatar() {
   fetchw('/avatar', {
@@ -43,7 +27,7 @@ function addAvatar() {
       name: state.name,
       vrcUuid: state.vrcUuid,
     }),
-  }).then(getAvatars)
+  }).then(() => emit('avatar-changed'))
 }
 
 function deleteAvatar() {
@@ -53,7 +37,7 @@ function deleteAvatar() {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ id: state.deletingAvatar.id }),
-  }).then(getAvatars)
+  }).then(() => emit('avatar-changed'))
 }
 
 function updateAvatarName(avatar: Avatar, name: string) {
@@ -97,7 +81,7 @@ function updateAvatar(avatar: Avatar) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(avatar),
-  }).then(getAvatars)
+  }).then(() => emit('avatar-changed'))
 }
 
 function onAvatarSelected(avatar: Avatar) {
@@ -211,7 +195,7 @@ function onAvatarSelected(avatar: Avatar) {
           url="/avatar/image"
           idProperty="avatarId"
           :idValue="state.activeAvatar.id"
-          @image-changed="getAvatars"
+          @image-changed="() => emit('avatar-changed')"
         />
       </div>
       <div>

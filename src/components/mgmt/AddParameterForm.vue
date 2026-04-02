@@ -64,7 +64,7 @@ function onTypeChange() {
 </script>
 
 <template>
-  <div class="row h5"><div class="col">Add a parameter</div></div>
+  <div class="row h5"><div class="col text-body">Add a parameter</div></div>
   <div class="row">
     <div class="col-4">
       <input
