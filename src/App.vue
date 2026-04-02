@@ -3,7 +3,7 @@ import Error from '@/components/Error.vue'
 import VrcParamMgmtDashboard from '@/components/mgmt/VrcParamMgmtDashboard.vue'
 import VrcParamChanger from '@/components/changer/VrcParamChanger.vue'
 import AboutModal from '@/components/AboutModal.vue'
-import { useThemeStore } from '@/stores/themeStore.ts'
+import { useThemeStore } from '@/stores/themeStore'
 
 const theme = useThemeStore()
 let targetType: string

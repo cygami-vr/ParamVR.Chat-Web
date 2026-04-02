@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import ThemedButton from '@/components/theme/ThemedButton.vue'
-import { useThemeStore } from '@/stores/themeStore.ts'
+import { useThemeStore } from '@/stores/themeStore'
 
 const theme = useThemeStore()
 

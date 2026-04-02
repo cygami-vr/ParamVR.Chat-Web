@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useThemeStore } from '@/stores/themeStore.ts'
+import { useThemeStore } from '@/stores/themeStore'
 
 const theme = useThemeStore()
 const props = defineProps(['defaultClass'])

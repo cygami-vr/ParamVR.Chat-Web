@@ -19,7 +19,7 @@ import ThemeSwitcher from '@/components/theme/ThemeSwitcher.vue'
 import AvatarChanger from '@/components/changer/AvatarChanger.vue'
 import fetchw from '@/fetchWrapper'
 import type Avatar from '@/model/Avatar'
-import { useThemeStore } from '@/stores/themeStore.ts'
+import { useThemeStore } from '@/stores/themeStore'
 import MuteLockButton from './MuteLockButton.vue'
 
 const theme = useThemeStore()
@@ -39,7 +39,7 @@ const parameters = ref(new Array<ParameterObject>())
 const props = defineProps(['targetType', 'target'])
 const updates = new Map<string, Change>()
 let connecting = false
-let avatarChangeCooldownTimeout = -1
+let avatarChangeCooldownTimeout: ReturnType<typeof setTimeout> | undefined
 
 let url: string
 if (env.isProduction) {
@@ -49,7 +49,7 @@ if (env.isProduction) {
 }
 
 const buttonClicks = new Map<string, number>()
-const buttonTimeouts = new Map<string, number>()
+const buttonTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
 
 console.log(`WebSocket URL = ${url}`)
 let socket: WebSocket
@@ -90,9 +90,9 @@ function handleStatus(status: Status) {
     if (status.avatarChangeCooldown > 0) {
       state.changeAvatarCooldownActive = true
 
-      if (avatarChangeCooldownTimeout != -1) {
+      if (avatarChangeCooldownTimeout) {
         clearTimeout(avatarChangeCooldownTimeout)
-        avatarChangeCooldownTimeout = -1
+        avatarChangeCooldownTimeout = undefined
       }
 
       avatarChangeCooldownTimeout = setTimeout(() => {
@@ -196,18 +196,18 @@ function connect(sessionId: string) {
   })
 }
 
-let sendTimeout: number = -1
+let sendTimeout: ReturnType<typeof setTimeout> | undefined
 
 function send(key: string, value: Change) {
   console.log(`Scheduling send ${sendTimeout}`)
   updates.set(key, value)
 
-  if (sendTimeout == -1) {
+  if (!sendTimeout) {
     sendTimeout = setTimeout(() => {
       console.log(`Sending ${updates.size} updates`)
       socket.send(JSON.stringify(Array.from(updates.values())))
       updates.clear()
-      sendTimeout = -1
+      sendTimeout = undefined
     }, 100)
   }
 }
@@ -306,7 +306,7 @@ const connectionState = computed(() => {
   const connected = state.status?.connected
   const vrcOpen = state.status?.vrcOpen
   console.log(
-    `Determining connection state. WS=${state.wsConnected}, Connected=${connected}, VRC=${vrcOpen}`,
+    `Determining connection state. WS=${state.wsConnected}, Connected=${connected}, VRC=${vrcOpen}`
   )
   return state.wsConnected && connected && vrcOpen ? true : false
 })
@@ -316,13 +316,9 @@ onUnmounted(() => {
   socket.close()
   clearInterval(reconnectInterval)
   clearInterval(pingInterval)
-  if (sendTimeout != -1) clearTimeout(sendTimeout)
-  buttonTimeouts.forEach((timeout) => {
-    clearTimeout(timeout)
-  })
-  if (avatarChangeCooldownTimeout != -1) {
-    clearTimeout(avatarChangeCooldownTimeout)
-  }
+  if (sendTimeout) clearTimeout(sendTimeout)
+  buttonTimeouts.forEach((timeout) => clearTimeout(timeout))
+  if (avatarChangeCooldownTimeout) clearTimeout(avatarChangeCooldownTimeout)
 })
 
 const optionsCollapseInit = state.showOptions ? 'show' : ''

@@ -2,7 +2,7 @@
 import { reactive } from 'vue'
 import Field from '@/components/mgmt/Field.vue'
 import fetchw from '@/fetchWrapper'
-import { useThemeStore } from '@/stores/themeStore.ts'
+import { useThemeStore } from '@/stores/themeStore'
 import type Settings from '@/model/Settings.ts'
 
 const theme = useThemeStore()
