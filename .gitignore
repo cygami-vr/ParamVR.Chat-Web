@@ -1,7 +1,6 @@
 .eslintrc.cjs
 env.d.ts
 package-lock.json
-package.json
 README.md
 tsconfig.config.json
 tsconfig.json

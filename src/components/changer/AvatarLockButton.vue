@@ -2,16 +2,16 @@
 import { useThemeStore } from '@/stores/themeStore.ts'
 
 const theme = useThemeStore()
-const props = defineProps(['param'])
+const props = defineProps(['avatarLocked', 'avatarLockedByOther'])
 defineEmits(['lock'])
 
 function getClasses() {
-  let classes = 'btn btn-primary-outline material-icons text-center'
+  let classes = 'btn fs-4'
   if (theme.effectiveColorPrimary) {
     classes += ' theme-focus'
   }
-  if (props.param.locked) {
-    if (props.param.lockKey) {
+  if (props.avatarLocked) {
+    if (!props.avatarLockedByOther) {
       classes += ' text-primary'
       if (theme.effectiveColorPrimary) {
         classes += ' color-theme'
@@ -26,22 +26,26 @@ function getClasses() {
 }
 
 function getTitle() {
-  if (props.param.locked) {
-    if (props.param.lockKey) {
-      return 'Unlock ' + props.param.description
+  if (props.avatarLocked) {
+    if (!props.avatarLockedByOther) {
+      return 'Avatar locked'
     }
     return 'Locked by another user'
   }
-  return 'Lock ' + props.param.description
+  return 'Avatar lock'
 }
 </script>
 
 <template>
-  <div v-if="param.lockable == 'Y'" class="col-4 text-end material-icons">
-    <button type="button" :class="getClasses()" @click="$emit('lock')" :title="getTitle()">
-      {{ param.locked ? 'lock' : 'lock_open' }}
-    </button>
-  </div>
+  <button
+    type="button"
+    :class="getClasses()"
+    @click="$emit('lock')"
+    :title="getTitle()"
+    id="avatarLockBtn"
+  >
+    {{ avatarLocked ? 'lock' : 'lock_open' }}
+  </button>
 </template>
 
 <style></style>

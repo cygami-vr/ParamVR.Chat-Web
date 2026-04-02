@@ -20,8 +20,6 @@ import AvatarChanger from '@/components/changer/AvatarChanger.vue'
 import fetchw from '@/fetchWrapper'
 import type Avatar from '@/model/Avatar'
 import { useThemeStore } from '@/stores/themeStore.ts'
-import ThemedCheckbox from '../theme/ThemedCheckbox.vue'
-import LockButton from './LockButton.vue'
 import MuteLockButton from './MuteLockButton.vue'
 
 const theme = useThemeStore()
@@ -31,6 +29,7 @@ const state = reactive({
   error: '',
   targetUser: '',
   allowMuteLock: false,
+  allowAvatarLock: false,
   status: {} as Status,
   changeableAvatars: [] as Array<Avatar>,
   changeAvatarCooldownActive: true,
@@ -138,6 +137,7 @@ function createSession() {
     const session = await resp.json()
     state.targetUser = session.targetUser
     state.allowMuteLock = session.allowMuteLock
+    state.allowAvatarLock = session.allowAvatarLock
     document.cookie = `uuid=${session.clientId};max-age=2000000000`
     connect(session.sessionId)
   })
@@ -232,7 +232,7 @@ function releaseButton(name: string, value: string, dataType: number, minPressTi
   } else {
     let timeout = buttonTimeouts.get(name)
     if (timeout) {
-      clearInterval(timeout)
+      clearTimeout(timeout)
     }
     timeout = setTimeout(() => trigger(name, value, dataType), timeRemaining)
     buttonTimeouts.set(name, timeout)
@@ -286,6 +286,17 @@ function muteLock() {
     change: {
       name: 'chat-paramvr-mutelock',
       value: !state.status.muteLocked,
+      dataType: 0,
+    },
+  })
+}
+
+function avatarLock() {
+  console.log(`Scheduling avatar lock ${!state.status.avatarLocked}`)
+  send('avatarlock', {
+    change: {
+      name: 'chat-paramvr-avatarlock',
+      value: !state.status.avatarLocked,
       dataType: 0,
     },
   })
@@ -401,7 +412,7 @@ createSession()
               off_status="In VR"
             />
 
-            <div class="col-2">
+            <div class="col-2 material-icons">
               <StatusIcon
                 name="microphone"
                 icon_on="mic"
@@ -424,8 +435,12 @@ createSession()
 
       <AvatarChanger
         :changeable-avatars="state.changeableAvatars"
-        :changeAvatarCooldownActive="state.changeAvatarCooldownActive"
+        :change-avatar-cooldown-active="state.changeAvatarCooldownActive"
+        :allow-avatar-lock="state.allowAvatarLock && connectionState"
+        :avatar-locked="state.status?.avatarLocked"
+        :avatar-locked-by-other="state.status?.avatarLockedByOther"
         @avatar-change="(chg) => send('avatar', chg)"
+        @avatar-lock="avatarLock"
       />
 
       <div class="row gy-3 justify-content-evenly mt-1">

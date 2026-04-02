@@ -6,7 +6,7 @@ const props = defineProps(['muteLocked', 'muteLockedByOther'])
 defineEmits(['lock'])
 
 function getClasses() {
-  let classes = 'btn material-icons fs-6'
+  let classes = 'btn fs-6'
   if (theme.effectiveColorPrimary) {
     classes += ' theme-focus'
   }

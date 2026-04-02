@@ -45,6 +45,13 @@ function updateAllowMuteLock(evt: Event, invite: InviteObject) {
   }
 }
 
+function updateAllowAvatarLock(evt: Event, invite: InviteObject) {
+  if (evt && evt.target && evt.target instanceof HTMLInputElement) {
+    invite.allowAvatarLock = evt.target.checked
+    updateInvite(invite)
+  }
+}
+
 function deleteInvite(invite: InviteObject) {
   fetchw('/invite', {
     method: 'DELETE',
@@ -149,6 +156,20 @@ function deleteAvatarChange(invite: InviteObject, avaId: number) {
               <div class="col-10 text-body text-start">
                 <label class="form-check-label" :for="`allowMuteLock${invite.id}`"
                   >Allow mute lock</label
+                >
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-2">
+                <ThemedCheckbox
+                  :checked="invite.allowAvatarLock"
+                  :id="`allowAvatarLock${invite.id}`"
+                  @change="(evt: Event) => updateAllowAvatarLock(evt, invite)"
+                />
+              </div>
+              <div class="col-10 text-body text-start">
+                <label class="form-check-label" :for="`allowAvatarLock${invite.id}`"
+                  >Allow avatar lock</label
                 >
               </div>
             </div>
