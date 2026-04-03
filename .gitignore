@@ -1,10 +1,5 @@
-.eslintrc.cjs
 env.d.ts
-package-lock.json
 README.md
-tsconfig.config.json
-tsconfig.json
-vite.config.ts
 .vscode
 
 # Logs

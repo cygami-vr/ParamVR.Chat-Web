@@ -56,10 +56,10 @@ function getAvatars() {
     }
   })
 }
-getAvatars()
 
 function loggedIn(userName: string) {
   state.userName = userName
+  getAvatars()
   reloadParameters()
   getEligible()
 }
