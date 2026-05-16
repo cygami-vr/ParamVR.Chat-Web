@@ -5,6 +5,7 @@ import {
   type Change,
   ParameterChange,
   ParameterLock,
+  EyeHeightChange,
   type WebSocketMessage,
   type Status,
 } from '@/model/WebSocketPayloads'
@@ -20,7 +21,8 @@ import AvatarChanger from '@/components/changer/AvatarChanger.vue'
 import fetchw from '@/fetchWrapper'
 import type Avatar from '@/model/Avatar'
 import { useThemeStore } from '@/stores/themeStore'
-import MuteLockButton from './MuteLockButton.vue'
+import MuteLockButton from '@/components/changer/MuteLockButton.vue'
+import ThemedSlider from '@/components/theme/ThemedSlider.vue'
 
 const theme = useThemeStore()
 
@@ -30,6 +32,7 @@ const state = reactive({
   targetUser: '',
   allowMuteLock: false,
   allowAvatarLock: false,
+  allowEyeHeightChange: false,
   status: {} as Status,
   changeableAvatars: [] as Array<Avatar>,
   changeAvatarCooldownActive: true,
@@ -102,6 +105,10 @@ function handleStatus(status: Status) {
       state.changeAvatarCooldownActive = false
     }
   }
+  if (status.minEyeHeight !== undefined && status.maxEyeHeight !== undefined) {
+    state.status.minEyeHeight = status.minEyeHeight
+    state.status.maxEyeHeight = status.maxEyeHeight
+  }
   if (status.colors) {
     theme.setColors(status.colors)
   }
@@ -138,6 +145,7 @@ function createSession() {
     state.targetUser = session.targetUser
     state.allowMuteLock = session.allowMuteLock
     state.allowAvatarLock = session.allowAvatarLock
+    state.allowEyeHeightChange = session.allowEyeHeightChange
     document.cookie = `uuid=${session.clientId};max-age=2000000000`
     connect(session.sessionId)
   })
@@ -302,6 +310,14 @@ function avatarLock() {
   })
 }
 
+function avatarHeightChanged(evt: Event) {
+  if (evt && evt.target && evt.target instanceof HTMLInputElement) {
+    const val = evt.target.value
+    console.log(`Scheduling avatar height change ${val}`)
+    send('eyeheight', new EyeHeightChange(Number(val)))
+  }
+}
+
 const connectionState = computed(() => {
   const connected = state.status?.connected
   const vrcOpen = state.status?.vrcOpen
@@ -438,6 +454,20 @@ createSession()
         @avatar-change="(chg) => send('avatar', chg)"
         @avatar-lock="avatarLock"
       />
+
+      <div v-if="state.allowEyeHeightChange" class="row gy-3 justify-content-center mt-1">
+        <div class="col-10 col-md-8 col-lg-6 p-3 text-center border bg-body rounded-3">
+          <span class="text-body h5">Avatar Height</span>
+          <ThemedSlider
+            :value="state.status.eyeHeight"
+            name="avatarHeight"
+            @change="avatarHeightChanged"
+            :min="state.status.minEyeHeight"
+            :max="state.status.maxEyeHeight"
+            step="0.01"
+          />
+        </div>
+      </div>
 
       <div class="row gy-3 justify-content-evenly mt-1">
         <div class="col-10 col-md-8 col-lg-5 text-center" v-if="parameters.length == 0">

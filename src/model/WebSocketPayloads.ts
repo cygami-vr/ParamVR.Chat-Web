@@ -52,6 +52,15 @@ export class AvatarChange extends Change {
   }
 }
 
+export class EyeHeightChange extends Change {
+  eyeHeight: number
+
+  constructor(eyeHeight: number) {
+    super()
+    this.eyeHeight = eyeHeight
+  }
+}
+
 export interface Status {
   avatar: Avatar
   muted: boolean | undefined
@@ -66,6 +75,9 @@ export interface Status {
   muteLockedByOther: boolean
   avatarLocked: boolean
   avatarLockedByOther: boolean
+  eyeHeight: number
+  minEyeHeight: number
+  maxEyeHeight: number
 }
 
 export interface WebSocketMessage {

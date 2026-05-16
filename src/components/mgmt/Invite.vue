@@ -38,6 +38,13 @@ function addAvatarChange(invite: InviteObject) {
   updateInvite(invite)
 }
 
+function updateAllowEyeHeightChange(evt: Event, invite: InviteObject) {
+  if (evt && evt.target && evt.target instanceof HTMLInputElement) {
+    invite.allowEyeHeightChange = evt.target.checked
+    updateInvite(invite)
+  }
+}
+
 function updateAllowMuteLock(evt: Event, invite: InviteObject) {
   if (evt && evt.target && evt.target instanceof HTMLInputElement) {
     invite.allowMuteLock = evt.target.checked
@@ -93,13 +100,13 @@ function getExpiryDateTime(invite: InviteObject) {
 
 function getEligibleParams(invite: InviteObject) {
   return props.eligible.parameters.filter(
-    (p: InviteParameter) => !invite.parameters.some((p2) => p.parameterId == p2.parameterId),
+    (p: InviteParameter) => !invite.parameters.some((p2) => p.parameterId == p2.parameterId)
   )
 }
 
 function getEligibleAvatarChanges(invite: InviteObject) {
   return props.eligible.changeableAvatars.filter(
-    (a: InviteAvatarChange) => !invite.changeableAvatars.some((a2) => a.avatarId == a2.avatarId),
+    (a: InviteAvatarChange) => !invite.changeableAvatars.some((a2) => a.avatarId == a2.avatarId)
   )
 }
 
@@ -145,6 +152,20 @@ function deleteAvatarChange(invite: InviteObject, avaId: number) {
       <div class="collapse" :id="`editInvite${invite.url}`">
         <div class="row justify-content-center mt-1">
           <div class="p-2 w-100">
+            <div class="row">
+              <div class="col-2">
+                <ThemedCheckbox
+                  :checked="invite.allowEyeHeightChange"
+                  :id="`allowEyeHeightChange${invite.id}`"
+                  @change="(evt: Event) => updateAllowEyeHeightChange(evt, invite)"
+                />
+              </div>
+              <div class="col-10 text-body text-start">
+                <label class="form-check-label" :for="`allowEyeHeightChange${invite.id}`"
+                  >Allow avatar height change</label
+                >
+              </div>
+            </div>
             <div class="row">
               <div class="col-2">
                 <ThemedCheckbox

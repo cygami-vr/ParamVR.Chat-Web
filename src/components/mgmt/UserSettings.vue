@@ -41,6 +41,46 @@ function updateAvatarChangeCooldown(value: string) {
   updateSettings()
 }
 
+function validateEyeHeight(min: string, max: string): boolean {
+  const minVal = Number(min)
+  const maxVal = Number(max)
+  if (isNaN(minVal) || isNaN(maxVal)) {
+    alert('Avatar heights must be numbers')
+    return false
+  }
+  if (minVal < 0 || maxVal < 0) {
+    alert('Avatar heights must be non-negative')
+    return false
+  }
+  if (minVal > maxVal) {
+    alert('Minimum avatar height cannot be greater than maximum avatar height')
+    return false
+  }
+  if (minVal < 0.01) {
+    alert('Minimum avatar height must be at least 0.01 meters')
+    return false
+  }
+  if (maxVal > 10000) {
+    alert('Maximum avatar height must be less than 10,000 meters')
+    return false
+  }
+  return true
+}
+
+function updateMinEyeHeight(value: string) {
+  if (validateEyeHeight(value, state.settings.maxEyeHeight.toString())) {
+    state.settings.minEyeHeight = Number(value)
+    updateSettings()
+  }
+}
+
+function updateMaxEyeHeight(value: string) {
+  if (validateEyeHeight(state.settings.minEyeHeight.toString(), value)) {
+    state.settings.maxEyeHeight = Number(value)
+    updateSettings()
+  }
+}
+
 function validateColor(color: string): boolean {
   const empty = !color || color.length == 0
   if (!empty && !/^[0-9a-fA-F]{6}$/.test(color)) {
@@ -98,6 +138,30 @@ function updateDarkModeSecondaryColor(value: string) {
             :editable="true"
             :value="state.settings.avatarChangeCooldown"
             @change="updateAvatarChangeCooldown"
+          />
+        </div>
+      </div>
+    </div>
+    <div class="row align-items-center text-start mt-1">
+      <div class="col-6 text-body">Minimum avatar (eye) height (meters):</div>
+      <div class="col-6">
+        <div class="input-group">
+          <Field
+            :editable="true"
+            :value="state.settings.minEyeHeight"
+            @change="updateMinEyeHeight"
+          />
+        </div>
+      </div>
+    </div>
+    <div class="row align-items-center text-start mt-1">
+      <div class="col-6 text-body">Maximum avatar (eye) height (meters):</div>
+      <div class="col-6">
+        <div class="input-group">
+          <Field
+            :editable="true"
+            :value="state.settings.maxEyeHeight"
+            @change="updateMaxEyeHeight"
           />
         </div>
       </div>

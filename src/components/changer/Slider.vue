@@ -14,8 +14,8 @@ watch(
   (val) => {
     if (typeof val == 'number') {
       state.current = Number(val.toFixed(2))
-    } else {
-      state.current = 0
+    } else if (typeof val == 'string') {
+      state.current = Number(Number(val).toFixed(2))
     }
   },
   { immediate: true }
